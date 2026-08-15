@@ -33,17 +33,17 @@ export function priceLabel(
 
   switch (service.priceType) {
     case "fixed":
-      return formatPrice(service.price, currency) ?? "Request a quote";
+      return formatPrice(service.price, currency) ?? "Prices vary";
     case "starting_from":
-      return `From ${formatPrice(service.minPrice ?? service.price, currency)}`;
+      return `From ${formatPrice(service.minPrice ?? service.price, currency) ?? "Prices vary"}`;
     case "range":
       if (service.minPrice !== null && service.maxPrice !== null) {
         return `${formatCurrency(service.minPrice, currency)}–${formatCurrency(service.maxPrice, currency)}`;
       }
-      return `From ${formatPrice(service.minPrice ?? service.price, currency)}`;
+      return `From ${formatPrice(service.minPrice ?? service.price, currency) ?? "Prices vary"}`;
     case "quote_required":
     default:
-      return "Request a quote";
+      return "Prices vary";
   }
 }
 

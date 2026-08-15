@@ -5,13 +5,21 @@ import { formatDuration, priceLabel } from "@/lib/format";
 
 export function ServiceCard({ service }: { service: BusinessService }) {
   const duration = formatDuration(service.durationMinutes);
+  const price = priceLabel(service);
+  const priceVaries = price === "Prices vary";
 
   return (
     <li className="flex flex-col gap-1 rounded-xl border border-border bg-card p-4">
       <div className="flex items-baseline justify-between gap-3">
         <h4 className="font-medium">{service.name}</h4>
-        <span className="shrink-0 text-sm font-medium text-primary">
-          {priceLabel(service)}
+        <span
+          className={
+            priceVaries
+              ? "shrink-0 text-sm text-muted-foreground"
+              : "shrink-0 text-sm font-medium text-primary"
+          }
+        >
+          {price}
         </span>
       </div>
       {service.description && (

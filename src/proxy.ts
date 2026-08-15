@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 
 import { updateSession } from "@/lib/supabase/proxy";
 
-const PROTECTED_PREFIXES = ["/account", "/conversations", "/onboarding", "/business"];
+const PROTECTED_PREFIXES = ["/account", "/conversations", "/onboarding"];
 
 const AUTH_ONLY_PREFIXES = ["/login", "/signup", "/forgot-password", "/update-password"];
 

@@ -5,6 +5,7 @@ import Link from "next/link";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -30,20 +31,19 @@ export function UserMenu({
         </span>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuLabel>
-          {name ?? "Your account"}
-          {email ? (
-            <span className="block text-xs font-normal text-muted-foreground">
-              {email}
-            </span>
-          ) : null}
-        </DropdownMenuLabel>
+        <DropdownMenuGroup>
+          <DropdownMenuLabel>
+            {name ?? "Your account"}
+            {email ? (
+              <span className="block text-xs font-normal text-muted-foreground">
+                {email}
+              </span>
+            ) : null}
+          </DropdownMenuLabel>
+        </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem render={<Link href="/account" />}>
           Your account
-        </DropdownMenuItem>
-        <DropdownMenuItem render={<Link href="/business" />}>
-          My business
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem variant="destructive" className="p-0">
