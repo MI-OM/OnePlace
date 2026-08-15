@@ -6,13 +6,35 @@ import { ArrowLeft, Bot, Mic, Send } from "lucide-react";
 
 import {
   closeConversation,
+  createRequest,
   requestHuman,
   sendMessage,
 } from "@/lib/chat/actions";
-import type { ConversationMessage } from "@/lib/chat/conversations";
+import type {
+  ConversationMessage,
+} from "@/lib/chat/conversations";
+import type { CreateRequestInput } from "@/lib/chat/actions";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 
 type LocalMessage = ConversationMessage & { status?: "sending" | "failed" };
@@ -226,6 +248,32 @@ export function ChatScreen({
     toast.success("We've let the team know.");
   }, [conversationId]);
 
+  const [requestOpen, setRequestOpen] = useState(false);
+  const [requestType, setRequestType] = useState<string>("information");
+  const [requestDate, setRequestDate] = useState("");
+  const [requestTime, setRequestTime] = useState("");
+  const [requestNotes, setRequestNotes] = useState("");
+
+  const handleRequestService = useCallback(async () => {
+    const result = await createRequest({
+      conversationId,
+      requestType: requestType as CreateRequestInput["requestType"],
+      requestedDate: requestDate || undefined,
+      requestedTime: requestTime || undefined,
+      notes: requestNotes || undefined,
+    });
+    if (result.error) {
+      toast.error(result.error);
+      return;
+    }
+    toast.success("Your request was sent to the business.");
+    setRequestOpen(false);
+    setRequestType("information");
+    setRequestDate("");
+    setRequestTime("");
+    setRequestNotes("");
+  }, [conversationId, requestType, requestDate, requestTime, requestNotes]);
+
   const handleClose = useCallback(async () => {
     const confirmed = window.confirm(
       "End this conversation?\nYou can always start a new conversation with this business later.",
@@ -392,6 +440,15 @@ export function ChatScreen({
           </form>
 
           <div className="flex items-center justify-between gap-3 text-xs text-muted-foreground">
+            <Button
+              type="button"
+              variant="link"
+              className="px-0 text-xs font-medium text-foreground"
+              onClick={() => setRequestOpen(true)}
+              disabled={status === "human_requested"}
+            >
+              Request a service
+            </Button>
             <button
               type="button"
               onClick={handleRequestHuman}
@@ -416,6 +473,70 @@ export function ChatScreen({
           </div>
         </div>
       )}
+
+      <Dialog open={requestOpen} onOpenChange={setRequestOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Request a service</DialogTitle>
+            <DialogDescription>
+              This will create a structured request the business can respond to
+              in this conversation.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="request-type">Request type</Label>
+              <Select value={requestType} onValueChange={(v) => setRequestType(v ?? "")}>
+                <SelectTrigger id="request-type">
+                  <SelectValue placeholder="Select a type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="information">Information</SelectItem>
+                  <SelectItem value="availability">Check availability</SelectItem>
+                  <SelectItem value="quote">Quote / estimate</SelectItem>
+                  <SelectItem value="booking">Booking</SelectItem>
+                  <SelectItem value="callback">Callback</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="request-date">Preferred date (optional)</Label>
+              <Input
+                id="request-date"
+                type="date"
+                value={requestDate}
+                onChange={(e) => setRequestDate(e.target.value)}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="request-time">Preferred time (optional)</Label>
+              <Input
+                id="request-time"
+                type="time"
+                value={requestTime}
+                onChange={(e) => setRequestTime(e.target.value)}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="request-notes">Notes (optional)</Label>
+              <Textarea
+                id="request-notes"
+                placeholder="Any details the business should know..."
+                value={requestNotes}
+                onChange={(e) => setRequestNotes(e.target.value)}
+                rows={4}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRequestOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleRequestService}>Send request</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
