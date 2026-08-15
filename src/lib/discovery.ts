@@ -1,3 +1,5 @@
+import { interpretQuery } from "@/lib/search/interpret";
+import { rewriteSearchQuery } from "@/lib/search/llm-rewrite";
 import { createAnonClient } from "@/lib/supabase/anon";
 
 export type BusinessSummary = {
@@ -66,8 +68,11 @@ export async function searchBusinesses(
   maxResults = 30,
 ): Promise<BusinessSummary[]> {
   const supabase = createAnonClient();
+
+  const interpreted = interpretQuery(query);
+
   const { data, error } = await supabase.rpc(RPC, {
-    search_query: query,
+    search_query: interpreted,
     max_results: maxResults,
   });
 
@@ -75,7 +80,37 @@ export async function searchBusinesses(
     throw new Error(`Couldn't search businesses: ${error.message}`);
   }
 
-  return (data ?? []).map(toSummary);
+  if (data && data.length > 0) {
+    return (data as BusinessRow[]).map(toSummary);
+  }
+
+  // No results: retry with the raw query (interpretQuery falls back to raw
+  // when no content words survive, but be safe for short queries).
+  if (interpreted !== query.trim() && query.trim().length > 0) {
+    const { data: rawData, error: rawError } = await supabase.rpc(RPC, {
+      search_query: query.trim(),
+      max_results: maxResults,
+    });
+    if (!rawError && rawData && rawData.length > 0) {
+      return (rawData as BusinessRow[]).map(toSummary);
+    }
+  }
+
+  // Still nothing: optionally ask the LLM to rewrite the query into keywords.
+  // Cached per normalized query and only used as a last resort, so an LLM is
+  // never called for every search (Doc 05 §66).
+  const rewritten = await rewriteSearchQuery(query);
+  if (rewritten && rewritten !== interpreted && rewritten.trim().length > 0) {
+    const { data: rewriteData, error: rewriteError } = await supabase.rpc(RPC, {
+      search_query: rewritten,
+      max_results: maxResults,
+    });
+    if (!rewriteError && rewriteData && rewriteData.length > 0) {
+      return (rewriteData as BusinessRow[]).map(toSummary);
+    }
+  }
+
+  return [];
 }
 
 export async function listBusinessesInCategory(

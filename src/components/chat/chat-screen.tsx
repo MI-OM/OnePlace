@@ -24,6 +24,28 @@ function timeLabel(iso: string): string {
   return date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
 }
 
+type MessageRow = {
+  id: string;
+  conversation_id: string;
+  sender_user_id: string | null;
+  sender_type: string;
+  message_type: string;
+  content: string | null;
+  created_at: string;
+};
+
+function mapRow(row: MessageRow): LocalMessage {
+  return {
+    id: String(row.id),
+    conversationId: String(row.conversation_id),
+    senderUserId: row.sender_user_id ? String(row.sender_user_id) : null,
+    senderType: row.sender_type as LocalMessage["senderType"],
+    messageType: row.message_type as LocalMessage["messageType"],
+    content: row.content ? String(row.content) : null,
+    createdAt: String(row.created_at),
+  };
+}
+
 export function ChatScreen({
   conversationId,
   businessName,
@@ -68,16 +90,8 @@ export function ChatScreen({
           filter: `conversation_id=eq.${conversationId}`,
         },
         (payload) => {
-          const row = payload.new as Record<string, unknown>;
-          const inserted: LocalMessage = {
-            id: String(row.id),
-            conversationId: String(row.conversation_id),
-            senderUserId: row.sender_user_id ? String(row.sender_user_id) : null,
-            senderType: row.sender_type as LocalMessage["senderType"],
-            messageType: row.message_type as LocalMessage["messageType"],
-            content: row.content ? String(row.content) : null,
-            createdAt: String(row.created_at),
-          };
+          const row = payload.new as unknown as MessageRow;
+          const inserted = mapRow(row);
 
           setMessages((current) => {
             if (current.some((message) => message.id === inserted.id)) {
@@ -97,12 +111,12 @@ export function ChatScreen({
               ];
             }
 
-            if (inserted.senderType === "ai_agent" || inserted.senderType === "system") {
-              setAiThinking(false);
-            }
-
             return [...current, inserted];
           });
+
+          if (inserted.senderType === "ai_agent" || inserted.senderType === "system") {
+            setAiThinking(false);
+          }
         },
       )
       .on(
@@ -125,6 +139,24 @@ export function ChatScreen({
     return () => {
       supabase.removeChannel(channel);
     };
+  }, [conversationId]);
+
+  const refreshMessages = useCallback(async () => {
+    const supabase = createClient();
+    const { data, error } = await supabase
+      .from("messages")
+      .select(
+        "id, conversation_id, sender_user_id, sender_type, message_type, content, created_at",
+      )
+      .eq("conversation_id", conversationId)
+      .order("created_at", { ascending: true });
+
+    if (error || !data) {
+      return;
+    }
+
+    setMessages(data.map(mapRow));
+    setAiThinking(false);
   }, [conversationId]);
 
   const handleSend = useCallback(
@@ -166,23 +198,19 @@ export function ChatScreen({
           ),
         );
         toast.error(result.error);
+        return;
       }
+
+      // The server action completes only after the AI message has been
+      // inserted, so a single reconcile guarantees the reply is shown even if
+      // a realtime event was missed by the client subscription.
+      await refreshMessages();
     },
-    [conversationId, sending, isClosed],
+    [conversationId, sending, isClosed, refreshMessages],
   );
 
   const handleRetry = useCallback(
     (content: string) => {
-      setMessages((current) =>
-        current.filter(
-          (message) =>
-            !(
-              message.id.startsWith("temp-") &&
-              message.content === content &&
-              message.senderType === "customer"
-            ),
-        ),
-      );
       void handleSend(content);
     },
     [handleSend],
