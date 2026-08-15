@@ -130,7 +130,13 @@ const INTENT_PATTERNS: ReadonlyArray<{ test: RegExp; terms: string[] }> = [
   { test: /\b(clean(?:ing|er|ers)?|housekeeping|vacu?um|dust|mop|maid|janitor|move\s*out|deep\s*clean|office\s*clean|post|construction)\b/i, terms: ["clean"] },
   { test: /\b(repair|plumb|plumbing|plumber|electrician|handyman|carpenter|paint(er|ing)|roof|furniture|appliance|leak|broken|fix|installation|tile|carpet)\b/i, terms: ["repair"] },
   { test: /\b(gym|fitness|workout|trainer|personal\s*trainer|weights|cardio|treadmill|recreation)\b/i, terms: ["fitness"] },
-  { test: /\b(event|wedding|party|planner|planning|celebration|catering|venue|dj|entertainment)\b/i, terms: ["planner"] },
+  // Event + party planning. We return several synonymous canonical terms so
+  // the search matches however the future category/service is named — e.g. an
+  // "Event Planning" category (contains "planning"), a "Wedding Planner"
+  // service (contains "planner"/"wedding"), or a "Catering" service. The SQL
+  // OR-fallback matches ANY of these terms, so new categories like these can
+  // be added in the DB without touching this code.
+  { test: /\b(wedding|marriage|engagement|anniversary|birthday|party|event|cebration|cater(ing|er)?|reception|venue|dj|entertainment|planner|planning)\b/i, terms: ["planner", "planning", "event", "wedding", "catering"] },
   { test: /\b(health|nutrition|diet|physical\s*therapy|chiropractor|osteopath)\b/i, terms: ["wellness"] },
 ];
 
