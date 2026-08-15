@@ -1,4 +1,4 @@
-import { interpretQuery } from "@/lib/search/interpret";
+import { classifyIntent, interpretQuery } from "@/lib/search/interpret";
 import { rewriteSearchQuery } from "@/lib/search/llm-rewrite";
 import { createAnonClient } from "@/lib/supabase/anon";
 
@@ -69,43 +69,54 @@ export async function searchBusinesses(
 ): Promise<BusinessSummary[]> {
   const supabase = createAnonClient();
 
+  // 1. Intent-aware: if the query expresses a single service/category intent,
+  // search with the canonical term(s) only — qualifiers like "affordable",
+  // "near me", "next week" are ignored so they don't produce noise. No LLM.
+  const intent = classifyIntent(query);
+
+  // 2. Deterministic interpretation: strip filler/stop-words, OR-semantics.
   const interpreted = interpretQuery(query);
 
-  const { data, error } = await supabase.rpc(RPC, {
-    search_query: interpreted,
-    max_results: maxResults,
-  });
-
-  if (error) {
-    throw new Error(`Couldn't search businesses: ${error.message}`);
-  }
-
-  if (data && data.length > 0) {
-    return (data as BusinessRow[]).map(toSummary);
-  }
-
-  // No results: retry with the raw query (interpretQuery falls back to raw
-  // when no content words survive, but be safe for short queries).
-  if (interpreted !== query.trim() && query.trim().length > 0) {
-    const { data: rawData, error: rawError } = await supabase.rpc(RPC, {
-      search_query: query.trim(),
-      max_results: maxResults,
-    });
-    if (!rawError && rawData && rawData.length > 0) {
-      return (rawData as BusinessRow[]).map(toSummary);
+  // Candidate queries in priority order. When an intent is classified we treat
+  // it as authoritative and do NOT fall back to broad OR / raw-phrase searches,
+  // which would reintroduce noise (e.g. "event" / "near me" matching everything).
+  const candidateQueries: string[] = [];
+  if (intent.terms.length > 0) {
+    candidateQueries.push(intent.terms.join(" "));
+  } else {
+    if (interpreted && interpreted !== query.trim()) {
+      candidateQueries.push(interpreted);
+    }
+    // Raw query as a cheap fallback for short/keyword searches only.
+    if (query.trim().length > 0 && !candidateQueries.includes(query.trim())) {
+      candidateQueries.push(query.trim());
     }
   }
 
-  // Still nothing: optionally ask the LLM to rewrite the query into keywords.
-  // Cached per normalized query and only used as a last resort, so an LLM is
-  // never called for every search (Doc 05 §66).
-  const rewritten = await rewriteSearchQuery(query);
-  if (rewritten && rewritten !== interpreted && rewritten.trim().length > 0) {
-    const { data: rewriteData, error: rewriteError } = await supabase.rpc(RPC, {
-      search_query: rewritten,
+  for (const searchQuery of candidateQueries) {
+    const { data, error } = await supabase.rpc(RPC, {
+      search_query: searchQuery,
       max_results: maxResults,
     });
-    if (!rewriteError && rewriteData && rewriteData.length > 0) {
+    if (error) {
+      throw new Error(`Couldn't search businesses: ${error.message}`);
+    }
+    const rows = (data ?? []) as BusinessRow[];
+    if (rows.length > 0) {
+      return rows.map(toSummary);
+    }
+  }
+
+  // 3. Still nothing: optionally ask the LLM to rewrite the query into
+  // keywords. Cached per normalized query and only used as a last resort, so
+  // an LLM is never called for every search (Doc 05 §66).
+  const rewritten = await rewriteSearchQuery(query);
+  if (rewritten && rewritten.trim().length > 0) {
+    const { data: rewriteData, error: rewriteError } = await supabase.rpc(RPC, {
+      search_query: rewritten.trim(),
+      max_results: maxResults,
+    });
+    if (!rewriteError && rewriteData && (rewriteData as BusinessRow[]).length > 0) {
       return (rewriteData as BusinessRow[]).map(toSummary);
     }
   }

@@ -100,3 +100,48 @@ export function interpretQueryTerms(query: string, max = 4): string[] {
   }
   return terms;
 }
+
+/**
+ * A customer intent expressed in natural language. When a query is recognized
+ * as a single service/category intent, we search with the canonical term(s)
+ * only — ignoring pricing, timing, and location qualifiers — so phrases like
+ * "I have an event next week and need affordable planner near me" don't match
+ * unrelated businesses (Doc 05 §66 / §67, Doc 14 §50 "Search is the AI
+ * interface"). This is a deterministic keyword match (no per-search LLM).
+ *
+ * `terms` is empty when the query is NOT recognized as a single intent.
+ */
+export type Intent = { terms: string[] };
+
+/**
+ * Maps common customer phrasing to canonical service/category terms anchored in
+ * the real vocabulary of the platform (categories: Beauty & Hair, Hair Salon,
+ * Barber Shop, Nails & Beauty, Day Spa, Massage Therapy, Health & Wellness,
+ * Home & Living, House Cleaning, Home Repair, Fitness & Gym).
+ *
+ * Each entry wins on its pattern only; ordering is most specific first so a
+ * more specific service (e.g. "manicure") takes priority over a broad one.
+ */
+const INTENT_PATTERNS: ReadonlyArray<{ test: RegExp; terms: string[] }> = [
+  { test: /\b(manucure|manicure|nail\s*(polish|fails|art|tech)|\bnail\b|gel\s+nail)\b/i, terms: ["nails"] },
+  { test: /\b(hair|hairs|haircut|hairstylist|hairdresser|hairoist|barber|bob|balayage|highlights|highlight|color|colour|cut|trim|fades|fade|taper|undercut|buzz)\b/i, terms: ["hair"] },
+  { test: /\b(massag(e|ing|age)|massagist|massage\s*therapy|deep\s+tissue|hot\s+stone|aromatherapy)\b/i, terms: ["massage"] },
+  { test: /\b(spa|day\s*sp|facial|wellness|sauna)\b/i, terms: ["spa"] },
+  { test: /\b(clean(?:ing|er|ers)?|housekeeping|vacu?um|dust|mop|maid|janitor|move\s*out|deep\s*clean|office\s*clean|post|construction)\b/i, terms: ["clean"] },
+  { test: /\b(repair|plumb|plumbing|plumber|electrician|handyman|carpenter|paint(er|ing)|roof|furniture|appliance|leak|broken|fix|installation|tile|carpet)\b/i, terms: ["repair"] },
+  { test: /\b(gym|fitness|workout|trainer|personal\s*trainer|weights|cardio|treadmill|recreation)\b/i, terms: ["fitness"] },
+  { test: /\b(event|wedding|party|planner|planning|celebration|catering|venue|dj|entertainment)\b/i, terms: ["planner"] },
+  { test: /\b(health|nutrition|diet|physical\s*therapy|chiropractor|osteopath)\b/i, terms: ["wellness"] },
+];
+
+/** Returns canonical terms for a single service/category intent, or `{}`. */
+export function classifyIntent(query: string): Intent {
+  if (!query) return { terms: [] };
+  for (const { test, terms } of INTENT_PATTERNS) {
+    if (test.test(query)) {
+      return { terms };
+    }
+  }
+  return { terms: [] };
+}
+
