@@ -7,6 +7,7 @@ import { getBusinessBySlug } from "@/lib/business";
 import { formatReviewDate } from "@/lib/format";
 import { getBusinessDayIndex, getOpenNowStatus } from "@/lib/hours";
 import { cn } from "@/lib/utils";
+import { StartConversation } from "@/components/chat/start-conversation";
 import { HoursList } from "@/components/business/hours-list";
 import { Rating } from "@/components/business/rating";
 import { ServiceCard } from "@/components/business/service-card";
@@ -126,6 +127,17 @@ export default async function BusinessPage({
           </ul>
         )}
       </header>
+
+      <div className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-3">
+        <StartConversation
+          businessId={business.id}
+          businessSlug={business.slug}
+        />
+        <p className="max-w-md text-sm text-muted-foreground">
+          Ask a question, find out what&apos;s available, or get help choosing
+          the right service.
+        </p>
+      </div>
 
       <div className="mt-8 grid gap-6 lg:grid-cols-3">
         <div className="space-y-8 lg:col-span-2">

@@ -45,6 +45,9 @@ export function UserMenu({
         <DropdownMenuItem render={<Link href="/account" />}>
           Your account
         </DropdownMenuItem>
+        <DropdownMenuItem render={<Link href="/conversations" />}>
+          Conversations
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem variant="destructive" className="p-0">
           <SignOutButton className="h-auto w-full justify-start rounded-none bg-transparent px-1.5 py-1 text-sm text-destructive hover:bg-destructive/10" />
