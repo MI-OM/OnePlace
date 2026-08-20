@@ -15,6 +15,10 @@ export type BusinessSummary = {
   reviewCount: number;
   priceFrom: number | null;
   servicesCount: number;
+  distanceMeters?: number | null;
+  logoUrl: string | null;
+  coverImageUrl: string | null;
+  isSponsored?: boolean;
 };
 
 export type Category = {
@@ -22,6 +26,7 @@ export type Category = {
   name: string;
   slug: string;
   icon: string | null;
+  imageUrl: string | null;
   description: string | null;
   parentId: string | null;
   parentName: string | null;
@@ -42,6 +47,9 @@ type BusinessRow = {
   review_count: number;
   price_from: number | null;
   services_count: number;
+  logo_url: string | null;
+  cover_image_url: string | null;
+  is_sponsored: boolean | null;
 };
 
 const RPC = "list_businesses";
@@ -60,7 +68,56 @@ function toSummary(row: BusinessRow): BusinessSummary {
     reviewCount: row.review_count,
     priceFrom: row.price_from,
     servicesCount: row.services_count,
+    logoUrl: row.logo_url,
+    coverImageUrl: row.cover_image_url,
+    isSponsored: row.is_sponsored ?? false,
   };
+}
+
+/**
+ * Look up categories whose name matches the ILIKE pattern. Returns matching
+ * category IDs ordered by specificity (exact matches first, then partial).
+ */
+async function findCategoriesByHint(
+  hint: string,
+): Promise<string[]> {
+  const supabase = createAnonClient();
+  const { data } = await supabase
+    .from("categories")
+    .select("id, name")
+    .eq("is_active", true)
+    .ilike("name", `%${hint}%`);
+
+  if (!data || data.length === 0) return [];
+
+  // Sort: exact word-boundary matches first (e.g. "House Cleaning" beats
+  // "Health & Wellness" when hint is "cleaning"), then by name length (shorter
+  // = more specific).
+  const escaped = hint.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const exactRe = new RegExp(`\\b${escaped}\\b`, "i");
+  data.sort((a, b) => {
+    const aExact = exactRe.test(a.name) ? 0 : 1;
+    const bExact = exactRe.test(b.name) ? 0 : 1;
+    if (aExact !== bExact) return aExact - bExact;
+    return a.name.length - b.name.length;
+  });
+
+  return data.map((c) => c.id);
+}
+
+/**
+ * Run an RPC search and return the rows (mapped to BusinessSummary) or an
+ * empty array on error.
+ */
+async function rpcSearch(
+  supabase: ReturnType<typeof createAnonClient>,
+  params: { category_id?: string; search_query?: string; max_results: number },
+): Promise<BusinessRow[]> {
+  const { data, error } = await supabase.rpc(RPC, params);
+  if (error) {
+    throw new Error(`Couldn't search businesses: ${error.message}`);
+  }
+  return (data ?? []) as BusinessRow[];
 }
 
 export async function searchBusinesses(
@@ -69,17 +126,82 @@ export async function searchBusinesses(
 ): Promise<BusinessSummary[]> {
   const supabase = createAnonClient();
 
-  // 1. Intent-aware: if the query expresses a single service/category intent,
-  // search with the canonical term(s) only — qualifiers like "affordable",
-  // "near me", "next week" are ignored so they don't produce noise. No LLM.
+  // ── 1. Intent classification ──────────────────────────────────────────
+  // When the query matches a known service pattern (e.g. "clean my house"
+  // → "clean"), we get both canonical search terms and a categoryHint
+  // (e.g. "house cleaning") that maps to the real DB category name.
   const intent = classifyIntent(query);
 
   // 2. Deterministic interpretation: strip filler/stop-words, OR-semantics.
   const interpreted = interpretQuery(query);
 
-  // Candidate queries in priority order. When an intent is classified we treat
-  // it as authoritative and do NOT fall back to broad OR / raw-phrase searches,
-  // which would reintroduce noise (e.g. "event" / "near me" matching everything).
+  // ── 2. Category-first retrieval (Google-style) ────────────────────────
+  // If intent identified a category hint, look up matching category IDs
+  // and search with category_id. This prevents ILIKE false positives:
+  // "Cleanse" in a spa service description will never surface for a
+  // "clean my house" query because Rosewater Day Spa isn't in the
+  // "House Cleaning" category.
+  if (intent.categoryHint) {
+    const categoryIds = await findCategoriesByHint(intent.categoryHint);
+    const searchTerms = intent.terms.join(" ");
+
+    for (const categoryId of categoryIds) {
+      const rows = await rpcSearch(supabase, {
+        category_id: categoryId,
+        search_query: searchTerms || undefined,
+        max_results: maxResults,
+      });
+      if (rows.length > 0) {
+        return rows.map(toSummary);
+      }
+    }
+  }
+
+  // ── 3. Dynamic category fallback (admin-added categories) ─────────────
+  // When no hardcoded categoryHint matched, try to discover categories
+  // dynamically using the interpreted content words. This ensures new
+  // categories added by admins (e.g. "Pet Grooming") are automatically
+  // discoverable without code changes.
+  const interpretedTerms = interpreted
+    .split(/\s+/)
+    .filter((t) => t.length >= 3);
+
+  if (interpretedTerms.length > 0) {
+    const supabase2 = createAnonClient();
+    const { data: dynamicCategories } = await supabase2
+      .from("categories")
+      .select("id, name")
+      .eq("is_active", true);
+
+    if (dynamicCategories && dynamicCategories.length > 0) {
+      // Score each category by how many interpreted terms appear in its name.
+      const scored = dynamicCategories
+        .map((cat) => {
+          const nameLower = cat.name.toLowerCase();
+          const score = interpretedTerms.filter((t) =>
+            nameLower.includes(t),
+          ).length;
+          return { id: cat.id, score };
+        })
+        .filter((c) => c.score > 0)
+        .sort((a, b) => b.score - a.score);
+
+      for (const { id: categoryId } of scored) {
+        const rows = await rpcSearch(supabase, {
+          category_id: categoryId,
+          search_query: interpretedTerms.join(" "),
+          max_results: maxResults,
+        });
+        if (rows.length > 0) {
+          return rows.map(toSummary);
+        }
+      }
+    }
+  }
+
+  // ── 4. Text-only fallback ─────────────────────────────────────────────
+  // No category matched (or no categoryHint). Fall back to text search
+  // with the canonical terms or interpreted content words.
   const candidateQueries: string[] = [];
   if (intent.terms.length > 0) {
     candidateQueries.push(intent.terms.join(" "));
@@ -87,37 +209,32 @@ export async function searchBusinesses(
     if (interpreted && interpreted !== query.trim()) {
       candidateQueries.push(interpreted);
     }
-    // Raw query as a cheap fallback for short/keyword searches only.
     if (query.trim().length > 0 && !candidateQueries.includes(query.trim())) {
       candidateQueries.push(query.trim());
     }
   }
 
   for (const searchQuery of candidateQueries) {
-    const { data, error } = await supabase.rpc(RPC, {
+    const rows = await rpcSearch(supabase, {
       search_query: searchQuery,
       max_results: maxResults,
     });
-    if (error) {
-      throw new Error(`Couldn't search businesses: ${error.message}`);
-    }
-    const rows = (data ?? []) as BusinessRow[];
     if (rows.length > 0) {
       return rows.map(toSummary);
     }
   }
 
-  // 3. Still nothing: optionally ask the LLM to rewrite the query into
-  // keywords. Cached per normalized query and only used as a last resort, so
-  // an LLM is never called for every search (Doc 05 §66).
+  // ── 5. LLM rewrite (last resort) ─────────────────────────────────────
+  // Cached per normalized query. Only called when local interpretation
+  // yielded zero results (Doc 05 §66).
   const rewritten = await rewriteSearchQuery(query);
   if (rewritten && rewritten.trim().length > 0) {
-    const { data: rewriteData, error: rewriteError } = await supabase.rpc(RPC, {
+    const rows = await rpcSearch(supabase, {
       search_query: rewritten.trim(),
       max_results: maxResults,
     });
-    if (!rewriteError && rewriteData && (rewriteData as BusinessRow[]).length > 0) {
-      return (rewriteData as BusinessRow[]).map(toSummary);
+    if (rows.length > 0) {
+      return rows.map(toSummary);
     }
   }
 
@@ -145,13 +262,201 @@ export async function listFeaturedBusinesses(
   maxResults = 8,
 ): Promise<BusinessSummary[]> {
   const supabase = createAnonClient();
-  const { data, error } = await supabase.rpc(RPC, { max_results: maxResults });
+  const { data, error } = await supabase
+    .from("businesses")
+    .select("id, name, slug, description, city, province, logo_url, cover_image_url, is_sponsored")
+    .eq("status", "active")
+    .is("deleted_at", null)
+    .eq("is_featured", true)
+    .order("created_at", { ascending: false })
+    .limit(maxResults);
 
   if (error) {
-    throw new Error(`Couldn't load businesses: ${error.message}`);
+    throw new Error(`Couldn't load featured businesses: ${error.message}`);
   }
 
-  return (data ?? []).map(toSummary);
+  if (!data || data.length === 0) return [];
+
+  const ids = data.map((b) => b.id);
+
+  const [catLinks, reviews, services] = await Promise.all([
+    supabase
+      .from("business_categories")
+      .select("business_id, is_primary, category:categories(name, slug)")
+      .in("business_id", ids)
+      .order("is_primary", { ascending: false }),
+    supabase
+      .from("reviews")
+      .select("business_id, rating")
+      .in("business_id", ids)
+      .eq("status", "published"),
+    supabase
+      .from("business_services")
+      .select("business_id, price")
+      .in("business_id", ids)
+      .eq("is_active", true),
+  ]);
+
+  const primaryCatMap = new Map<string, { name: string; slug: string }>();
+  for (const link of catLinks.data ?? []) {
+    if (link.is_primary && !primaryCatMap.has(link.business_id)) {
+      const cat = Array.isArray(link.category) ? link.category[0] : link.category;
+      if (cat) primaryCatMap.set(link.business_id, { name: cat.name, slug: cat.slug });
+    }
+  }
+  if (primaryCatMap.size === 0) {
+    for (const link of catLinks.data ?? []) {
+      if (!primaryCatMap.has(link.business_id)) {
+        const cat = Array.isArray(link.category) ? link.category[0] : link.category;
+        if (cat) primaryCatMap.set(link.business_id, { name: cat.name, slug: cat.slug });
+      }
+    }
+  }
+
+  const ratingMap = new Map<string, { total: number; count: number }>();
+  for (const r of reviews.data ?? []) {
+    const entry = ratingMap.get(r.business_id) ?? { total: 0, count: 0 };
+    entry.total += r.rating;
+    entry.count += 1;
+    ratingMap.set(r.business_id, entry);
+  }
+
+  const priceMap = new Map<string, number>();
+  for (const s of services.data ?? []) {
+    if (s.price != null) {
+      const cur = priceMap.get(s.business_id);
+      if (cur == null || s.price < cur) priceMap.set(s.business_id, s.price);
+    }
+  }
+
+  const servicesCountMap = new Map<string, number>();
+  for (const s of services.data ?? []) {
+    servicesCountMap.set(s.business_id, (servicesCountMap.get(s.business_id) ?? 0) + 1);
+  }
+
+  return data.map((b) => {
+    const entry = ratingMap.get(b.id);
+    const avg = entry ? Math.round((entry.total / entry.count) * 10) / 10 : null;
+    return {
+      id: b.id,
+      name: b.name,
+      slug: b.slug,
+      description: b.description,
+      primaryCategoryName: primaryCatMap.get(b.id)?.name ?? null,
+      primaryCategorySlug: primaryCatMap.get(b.id)?.slug ?? null,
+      city: b.city,
+      province: b.province,
+      rating: avg,
+      reviewCount: entry?.count ?? 0,
+      priceFrom: priceMap.get(b.id) ?? null,
+      servicesCount: servicesCountMap.get(b.id) ?? 0,
+      logoUrl: b.logo_url,
+      coverImageUrl: b.cover_image_url,
+      isSponsored: b.is_sponsored,
+    };
+  });
+}
+
+export async function getTopRatedBusinesses(
+  maxResults = 8,
+): Promise<BusinessSummary[]> {
+  const supabase = createAnonClient();
+
+  const { data: reviews, error: revErr } = await supabase
+    .from("reviews")
+    .select("business_id, rating")
+    .eq("status", "published");
+
+  if (revErr) throw new Error(`Couldn't load reviews: ${revErr.message}`);
+
+  const agg = new Map<string, { total: number; count: number }>();
+  for (const r of reviews ?? []) {
+    const entry = agg.get(r.business_id) ?? { total: 0, count: 0 };
+    entry.total += r.rating;
+    entry.count += 1;
+    agg.set(r.business_id, entry);
+  }
+
+  const ranked = [...agg.entries()]
+    .filter(([, e]) => e.count >= 1)
+    .map(([id, e]) => ({
+      id,
+      avg: Math.round((e.total / e.count) * 10) / 10,
+      count: e.count,
+    }))
+    .sort((a, b) => b.avg - a.avg || b.count - a.count)
+    .slice(0, maxResults);
+
+  if (ranked.length === 0) return [];
+
+  const ids = ranked.map((r) => r.id);
+  const ratingById = new Map(ranked.map((r) => [r.id, { avg: r.avg, count: r.count }]));
+
+  const [bizData, catLinks, services] = await Promise.all([
+    supabase
+      .from("businesses")
+      .select("id, name, slug, description, city, province, logo_url, cover_image_url, is_sponsored")
+      .in("id", ids)
+      .eq("status", "active")
+      .is("deleted_at", null),
+    supabase
+      .from("business_categories")
+      .select("business_id, is_primary, category:categories(name, slug)")
+      .in("business_id", ids)
+      .order("is_primary", { ascending: false }),
+    supabase
+      .from("business_services")
+      .select("business_id, price")
+      .in("business_id", ids)
+      .eq("is_active", true),
+  ]);
+
+  const bizMap = new Map((bizData.data ?? []).map((b) => [b.id, b]));
+
+  const primaryCatMap = new Map<string, { name: string; slug: string }>();
+  for (const link of catLinks.data ?? []) {
+    if (link.is_primary && !primaryCatMap.has(link.business_id)) {
+      const cat = Array.isArray(link.category) ? link.category[0] : link.category;
+      if (cat) primaryCatMap.set(link.business_id, { name: cat.name, slug: cat.slug });
+    }
+  }
+
+  const priceMap = new Map<string, number>();
+  for (const s of services.data ?? []) {
+    if (s.price != null) {
+      const cur = priceMap.get(s.business_id);
+      if (cur == null || s.price < cur) priceMap.set(s.business_id, s.price);
+    }
+  }
+
+  const servicesCountMap = new Map<string, number>();
+  for (const s of services.data ?? []) {
+    servicesCountMap.set(s.business_id, (servicesCountMap.get(s.business_id) ?? 0) + 1);
+  }
+
+  return ranked
+    .map((r) => {
+      const b = bizMap.get(r.id);
+      if (!b) return null;
+      return {
+        id: b.id,
+        name: b.name,
+        slug: b.slug,
+        description: b.description,
+        primaryCategoryName: primaryCatMap.get(b.id)?.name ?? null,
+        primaryCategorySlug: primaryCatMap.get(b.id)?.slug ?? null,
+        city: b.city,
+        province: b.province,
+        rating: ratingById.get(b.id)?.avg ?? null,
+        reviewCount: ratingById.get(b.id)?.count ?? 0,
+        priceFrom: priceMap.get(b.id) ?? null,
+        servicesCount: servicesCountMap.get(b.id) ?? 0,
+        logoUrl: b.logo_url,
+        coverImageUrl: b.cover_image_url,
+        isSponsored: b.is_sponsored,
+      };
+    })
+    .filter(Boolean) as BusinessSummary[];
 }
 
 export async function getCategories(): Promise<Category[]> {
@@ -160,7 +465,7 @@ export async function getCategories(): Promise<Category[]> {
   const [categories, counts] = await Promise.all([
     supabase
       .from("categories")
-      .select("id, name, slug, icon, description, parent_id")
+      .select("id, name, slug, icon, image_url, description, parent_id")
       .eq("is_active", true)
       .order("sort_order"),
     supabase
@@ -195,6 +500,7 @@ export async function getCategories(): Promise<Category[]> {
       name: category.name,
       slug: category.slug,
       icon: category.icon,
+      imageUrl: category.image_url ?? null,
       description: category.description,
       parentId: category.parent_id,
       parentName: parent?.name ?? null,
@@ -210,4 +516,70 @@ export async function getCategoryBySlug(
   const categories = await getCategories();
   const category = categories.find((category) => category.slug === slug);
   return category ?? null;
+}
+
+// ---------------------------------------------------------------------------
+// Location-based distance sorting
+// ---------------------------------------------------------------------------
+
+const EARTH_RADIUS_M = 6_371_000;
+
+export function haversineDistance(
+  lat1: number,
+  lng1: number,
+  lat2: number,
+  lng2: number,
+): number {
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+  return EARTH_RADIUS_M * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+/**
+ * Enriches search results with haversine distance when the user provides
+ * their location. Fetches lat/lng for all result businesses, attaches
+ * `distanceMeters`, and re-sorts nearest-first.
+ */
+export async function enrichWithDistance(
+  results: BusinessSummary[],
+  userLat: number,
+  userLng: number,
+): Promise<BusinessSummary[]> {
+  if (results.length === 0) return results;
+
+  const supabase = createAnonClient();
+  const ids = results.map((r) => r.id);
+
+  const { data } = await supabase
+    .from("businesses")
+    .select("id, latitude, longitude")
+    .in("id", ids);
+
+  const coordsMap = new Map(
+    (data ?? []).map((row: any) => [row.id, { lat: row.latitude, lng: row.longitude }]),
+  );
+
+  const enriched = results.map((r) => {
+    const coords = coordsMap.get(r.id);
+    if (coords?.lat != null && coords?.lng != null) {
+      return {
+        ...r,
+        distanceMeters: haversineDistance(userLat, userLng, coords.lat, coords.lng),
+      };
+    }
+    return { ...r, distanceMeters: null };
+  });
+
+  enriched.sort((a, b) => {
+    if (a.distanceMeters == null && b.distanceMeters == null) return 0;
+    if (a.distanceMeters == null) return 1;
+    if (b.distanceMeters == null) return -1;
+    return a.distanceMeters - b.distanceMeters;
+  });
+
+  return enriched;
 }

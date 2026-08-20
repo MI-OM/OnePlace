@@ -6,6 +6,7 @@ export type BusinessContext = {
   personality: string | null;
   greeting: string | null;
   aiEnabled: boolean;
+  preferredLanguage: string | null;
   context: string;
 };
 
@@ -13,9 +14,15 @@ export type BusinessContext = {
  * Loads grounded business information for the AI (Doc 14 §15, §107).
  * Uses the service-role client so knowledge items (which are member-only
  * under RLS) are readable server-side and never exposed to the customer.
+ *
+ * When `customerMessage` is provided, knowledge items are ranked by
+ * keyword relevance so only the most pertinent documents are included
+ * (RAG-lite retrieval). Without a message (e.g. greeting), all active
+ * items are included with a hard cap.
  */
 export async function loadBusinessContext(
   businessId: string,
+  customerMessage?: string,
 ): Promise<BusinessContext> {
   const supabase = createServiceClient();
 
@@ -49,7 +56,7 @@ export async function loadBusinessContext(
         .order("priority"),
       supabase
         .from("ai_configurations")
-        .select("enabled, greeting, personality, handoff_enabled, escalation_enabled")
+        .select("enabled, greeting, personality, handoff_enabled, escalation_enabled, preferred_language")
         .eq("business_id", businessId)
         .maybeSingle(),
     ]);
@@ -116,8 +123,9 @@ export async function loadBusinessContext(
   }
 
   if (knowledge.length > 0) {
+    const ranked = rankKnowledge(knowledge, customerMessage);
     lines.push(`Business policies and knowledge:`);
-    for (const item of knowledge) {
+    for (const item of ranked) {
       lines.push(`  - ${item.title}: ${item.content}`);
     }
   }
@@ -127,6 +135,72 @@ export async function loadBusinessContext(
     personality: config?.personality ?? null,
     greeting: config?.greeting ?? null,
     aiEnabled: config?.enabled ?? true,
+    preferredLanguage: config?.preferred_language ?? null,
     context: lines.join("\n"),
   };
+}
+
+const STOP_WORDS = new Set([
+  "i", "me", "my", "we", "our", "you", "your", "he", "she", "it",
+  "they", "them", "this", "that", "am", "is", "are", "was", "were",
+  "be", "been", "being", "have", "has", "had", "do", "does", "did",
+  "a", "an", "the", "and", "or", "but", "in", "on", "at", "to",
+  "for", "of", "with", "by", "from", "as", "into", "about", "can",
+  "could", "would", "should", "will", "may", "might", "shall",
+  "not", "no", "nor", "if", "then", "else", "when", "so",
+  "what", "how", "which", "who", "whom", "where", "why",
+  "hi", "hello", "hey", "thanks", "please", "yes", "no",
+  "just", "also", "very", "too", "really", "much", "more",
+]);
+
+/**
+ * RAG-lite: ranks knowledge items by keyword overlap with the customer's
+ * message. High-priority items get a small boost. Returns at most
+ * MAX_KNOWLEDGE_ITEMS to avoid context overflow.
+ */
+function rankKnowledge(
+  items: { title: string; content: string; category: string | null; priority: number }[],
+  customerMessage?: string,
+  maxItems = 8,
+): typeof items {
+  if (!customerMessage || items.length <= maxItems) {
+    return items.slice(0, maxItems);
+  }
+
+  const queryTokens = extractTokens(customerMessage);
+
+  const scored = items.map((item) => {
+    const text = `${item.title} ${item.content} ${item.category ?? ""}`;
+    const itemTokens = extractTokens(text);
+    const itemSet = new Set(itemTokens);
+
+    let score = 0;
+    for (const token of queryTokens) {
+      if (itemSet.has(token)) score++;
+      // Partial match: prefix check
+      for (const itemToken of itemSet) {
+        if (itemToken.startsWith(token) || token.startsWith(itemToken)) {
+          score += 0.5;
+        }
+      }
+    }
+
+    // Priority boost
+    score += item.priority * 0.3;
+
+    return { item, score };
+  });
+
+  return scored
+    .sort((a, b) => b.score - a.score)
+    .slice(0, maxItems)
+    .map((s) => s.item);
+}
+
+function extractTokens(text: string): string[] {
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, " ")
+    .split(/\s+/)
+    .filter((t) => t.length > 2 && !STOP_WORDS.has(t));
 }

@@ -12,7 +12,7 @@ export default function AuthLayout({
           href="/"
           className="text-lg font-semibold tracking-tight text-foreground"
         >
-          One Place
+          OnePlace
         </Link>
       </header>
       <main className="flex flex-1 items-start justify-center px-6 pb-16 sm:items-center">

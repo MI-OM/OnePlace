@@ -4,9 +4,9 @@ import { Compass, MessageCircle, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = {
-  title: "About — One Place",
+  title: "About — OnePlace",
   description:
-    "One Place helps you discover local businesses, explore their services, and get answers without making five different calls.",
+    "OnePlace helps you discover local businesses, explore their services, and get answers without making five different calls.",
 };
 
 export default function AboutPage() {
@@ -18,7 +18,7 @@ export default function AboutPage() {
             Local help, in one place.
           </h1>
           <p className="mx-auto mt-4 max-w-xl text-lg leading-relaxed text-muted-foreground">
-            One Place helps you discover local businesses, explore their
+            OnePlace helps you discover local businesses, explore their
             services, and get answers without making five different calls.
           </p>
         </div>

@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { UpdatePasswordForm } from "@/components/auth/update-password-form";
 
 export const metadata: Metadata = {
-  title: "Set a new password — One Place",
+  title: "Set a new password — OnePlace",
 };
 
 export default function UpdatePasswordPage() {

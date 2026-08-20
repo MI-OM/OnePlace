@@ -11,6 +11,7 @@ import {
   sendCustomerMessage,
 } from "@/lib/chat/conversations";
 import { createServiceClient } from "@/lib/supabase/service";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 export type ChatActionResult = {
   error?: string;
@@ -43,6 +44,14 @@ export async function sendMessage(
   const parsed = messageSchema.safeParse(input);
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Message failed to send." };
+  }
+
+  const user = await getUser();
+  if (user) {
+    const rl = checkRateLimit(`msg:${user.id}`, 30, 60_000);
+    if (!rl.allowed) {
+      return { error: "You're sending messages too quickly. Please wait a moment." };
+    }
   }
 
   try {
@@ -94,6 +103,7 @@ const requestSchema = z.object({
     "callback",
     "other",
   ]),
+  businessServiceId: z.string().uuid().optional(),
   requestedDate: z
     .string()
     .optional()
@@ -143,6 +153,7 @@ export async function createRequest(
   const {
     conversationId,
     requestType,
+    businessServiceId,
     requestedDate,
     requestedTime,
     notes,
@@ -151,8 +162,6 @@ export async function createRequest(
   try {
     const service = createServiceClient();
 
-    // Resolve the business + service for the request from the conversation so
-    // the customer can't target another business.
     const { data: conversation, error: convError } = await service
       .from("conversations")
       .select("business_id")
@@ -163,6 +172,19 @@ export async function createRequest(
       return { error: "This conversation isn't available." };
     }
 
+    if (businessServiceId) {
+      const { data: svc } = await service
+        .from("business_services")
+        .select("id")
+        .eq("id", businessServiceId)
+        .eq("business_id", conversation.business_id)
+        .eq("is_active", true)
+        .maybeSingle();
+      if (!svc) {
+        return { error: "Selected service is not available." };
+      }
+    }
+
     const { data: created, error } = await service
       .from("service_requests")
       .insert({
@@ -170,6 +192,7 @@ export async function createRequest(
         business_id: conversation.business_id,
         customer_id: user.id,
         request_type: requestType,
+        business_service_id: businessServiceId ?? null,
         requested_date: requestedDate ?? null,
         requested_time: requestedTime ?? null,
         notes: notes ?? null,

@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useActionState } from "react";
+import { useActionState, useRef, useState } from "react";
 
 import { signIn } from "@/lib/auth/actions";
+import { Captcha } from "@/components/auth/captcha";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,6 +13,13 @@ import { SubmitButton } from "@/components/auth/submit-button";
 
 export function SignInForm({ next }: { next?: string }) {
   const router = useRouter();
+  const [turnstileToken, setTurnstileToken] = useState("");
+  const tokenRef = useRef("");
+
+  function handleToken(token: string) {
+    tokenRef.current = token;
+    setTurnstileToken(token);
+  }
 
   async function handleSubmit(
     _prev: { error?: string } | undefined,
@@ -21,6 +29,7 @@ export function SignInForm({ next }: { next?: string }) {
       {
         email: String(formData.get("email") ?? ""),
         password: String(formData.get("password") ?? ""),
+        turnstileToken: tokenRef.current,
       },
       next ?? "/",
     );
@@ -66,6 +75,8 @@ export function SignInForm({ next }: { next?: string }) {
           required
         />
       </div>
+
+      <Captcha onVerify={handleToken} />
 
       {state?.error ? (
         <p className="text-sm text-destructive" role="alert">

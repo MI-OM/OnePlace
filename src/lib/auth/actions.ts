@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { verifyTurnstileToken } from "@/lib/turnstile";
 import { z } from "zod";
 
 export type ActionResult = {
@@ -16,11 +17,13 @@ const emailSchema = z.string().trim().email("Enter a valid email address.");
 const signInSchema = z.object({
   email: emailSchema,
   password: z.string().min(1, "Enter your password."),
+  turnstileToken: z.string().min(1, "Please complete the captcha."),
 });
 
 const signUpSchema = z.object({
   email: emailSchema,
   password: z.string().min(8, "Password must be at least 8 characters."),
+  turnstileToken: z.string().min(1, "Please complete the captcha."),
 });
 
 const updatePasswordSchema = z.object({
@@ -61,12 +64,17 @@ function errorFrom(authError: { code?: string; message: string }): string {
 }
 
 export async function signIn(
-  input: { email: string; password: string },
+  input: { email: string; password: string; turnstileToken: string },
   redirectTo = "/",
 ): Promise<ActionResult> {
   const parsed = signInSchema.safeParse(input);
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Check your details." };
+  }
+
+  const captcha = await verifyTurnstileToken(parsed.data.turnstileToken);
+  if (!captcha.success) {
+    return { error: "Captcha verification failed. Please try again." };
   }
 
   const supabase = await createClient();
@@ -80,11 +88,16 @@ export async function signIn(
 }
 
 export async function signUp(
-  input: { email: string; password: string },
+  input: { email: string; password: string; turnstileToken: string },
 ): Promise<ActionResult> {
   const parsed = signUpSchema.safeParse(input);
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Check your details." };
+  }
+
+  const captcha = await verifyTurnstileToken(parsed.data.turnstileToken);
+  if (!captcha.success) {
+    return { error: "Captcha verification failed. Please try again." };
   }
 
   const supabase = await createClient();
@@ -112,11 +125,16 @@ export async function signOut(): Promise<void> {
 }
 
 export async function resetPasswordForEmail(
-  input: { email: string },
+  input: { email: string; turnstileToken: string },
 ): Promise<ActionResult> {
   const parsed = emailSchema.safeParse(input.email);
   if (!parsed.success) {
     return { error: "Enter a valid email address." };
+  }
+
+  const captcha = await verifyTurnstileToken(input.turnstileToken);
+  if (!captcha.success) {
+    return { error: "Captcha verification failed. Please try again." };
   }
 
   const supabase = await createClient();

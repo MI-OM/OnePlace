@@ -5,7 +5,7 @@ export function SiteFooter() {
     <footer className="border-t bg-background">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-6 py-10 sm:flex-row sm:items-center">
         <div>
-          <p className="text-sm font-semibold tracking-tight">One Place</p>
+          <p className="text-sm font-semibold tracking-tight">OnePlace</p>
           <p className="mt-1 text-sm text-muted-foreground">
             Find local services in one place.
           </p>

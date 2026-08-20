@@ -36,6 +36,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { VoiceSession } from "@/components/voice/voice-session";
 
 type LocalMessage = ConversationMessage & { status?: "sending" | "failed" };
 
@@ -70,12 +71,14 @@ function mapRow(row: MessageRow): LocalMessage {
 
 export function ChatScreen({
   conversationId,
+  businessId,
   businessName,
   businessSlug,
   initialStatus,
   initialMessages,
 }: {
   conversationId: string;
+  businessId: string;
   businessName: string;
   businessSlug: string;
   initialStatus: string;
@@ -97,6 +100,24 @@ export function ChatScreen({
   useEffect(() => {
     scrollToBottom();
   }, [messages, aiThinking, scrollToBottom]);
+
+  const refreshMessages = useCallback(async () => {
+    const supabase = createClient();
+    const { data, error } = await supabase
+      .from("messages")
+      .select(
+        "id, conversation_id, sender_user_id, sender_type, message_type, content, created_at",
+      )
+      .eq("conversation_id", conversationId)
+      .order("created_at", { ascending: true });
+
+    if (error || !data) {
+      return;
+    }
+
+    setMessages(data.map(mapRow));
+    setAiThinking(false);
+  }, [conversationId]);
 
   useEffect(() => {
     const supabase = createClient();
@@ -153,6 +174,7 @@ export function ChatScreen({
           const row = payload.new as Record<string, unknown>;
           if (typeof row.status === "string") {
             setStatus(row.status);
+            refreshMessages();
           }
         },
       )
@@ -161,25 +183,17 @@ export function ChatScreen({
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [conversationId]);
+  }, [conversationId, refreshMessages]);
 
-  const refreshMessages = useCallback(async () => {
-    const supabase = createClient();
-    const { data, error } = await supabase
-      .from("messages")
-      .select(
-        "id, conversation_id, sender_user_id, sender_type, message_type, content, created_at",
-      )
-      .eq("conversation_id", conversationId)
-      .order("created_at", { ascending: true });
+  useEffect(() => {
+    if (status !== "human_connected") return;
 
-    if (error || !data) {
-      return;
-    }
+    const id = setInterval(() => {
+      refreshMessages();
+    }, 10_000);
 
-    setMessages(data.map(mapRow));
-    setAiThinking(false);
-  }, [conversationId]);
+    return () => clearInterval(id);
+  }, [status, refreshMessages]);
 
   const handleSend = useCallback(
     async (content: string) => {
@@ -253,11 +267,33 @@ export function ChatScreen({
   const [requestDate, setRequestDate] = useState("");
   const [requestTime, setRequestTime] = useState("");
   const [requestNotes, setRequestNotes] = useState("");
+  const [requestServiceId, setRequestServiceId] = useState<string>("");
+  const [businessServices, setBusinessServices] = useState<
+    { id: string; name: string }[]
+  >([]);
+  const [voiceActive, setVoiceActive] = useState(false);
+  const [voiceSessionId, setVoiceSessionId] = useState<string | null>(null);
+  const [voiceTranscript, setVoiceTranscript] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!requestOpen || businessServices.length > 0) return;
+    const supabase = createClient();
+    supabase
+      .from("business_services")
+      .select("id, name")
+      .eq("business_id", businessId)
+      .eq("is_active", true)
+      .order("name")
+      .then(({ data }) => {
+        if (data) setBusinessServices(data);
+      });
+  }, [requestOpen, businessId, businessServices.length]);
 
   const handleRequestService = useCallback(async () => {
     const result = await createRequest({
       conversationId,
       requestType: requestType as CreateRequestInput["requestType"],
+      businessServiceId: requestServiceId || undefined,
       requestedDate: requestDate || undefined,
       requestedTime: requestTime || undefined,
       notes: requestNotes || undefined,
@@ -269,10 +305,11 @@ export function ChatScreen({
     toast.success("Your request was sent to the business.");
     setRequestOpen(false);
     setRequestType("information");
+    setRequestServiceId("");
     setRequestDate("");
     setRequestTime("");
     setRequestNotes("");
-  }, [conversationId, requestType, requestDate, requestTime, requestNotes]);
+  }, [conversationId, requestType, requestServiceId, requestDate, requestTime, requestNotes]);
 
   const handleClose = useCallback(async () => {
     const confirmed = window.confirm(
@@ -307,7 +344,7 @@ export function ChatScreen({
             </h1>
             <p className="flex items-center gap-1 text-xs text-muted-foreground">
               <Bot className="size-3" aria-hidden />
-              AI assistant
+              {status === "human_connected" ? "Team member" : "AI assistant"}
             </p>
           </div>
         </div>
@@ -315,6 +352,11 @@ export function ChatScreen({
         {status === "human_requested" ? (
           <span className="inline-flex shrink-0 items-center rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-muted-foreground">
             Waiting for team
+          </span>
+        ) : status === "human_connected" ? (
+          <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-muted-foreground">
+            <span className="size-1.5 rounded-full bg-green-600" aria-hidden />
+            Team member
           </span>
         ) : (
           <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-muted-foreground">
@@ -325,7 +367,9 @@ export function ChatScreen({
       </header>
 
       <p className="mt-3 text-center text-xs text-muted-foreground">
-        You&apos;re chatting with an AI assistant.
+        {status === "human_connected"
+          ? "You're chatting with a team member."
+          : "You're chatting with an AI assistant."}
       </p>
 
       <div className="mt-4 flex flex-1 flex-col gap-3 overflow-y-auto rounded-2xl border border-border bg-background p-4">
@@ -410,6 +454,18 @@ export function ChatScreen({
             Done
           </Button>
         </div>
+      ) : voiceActive && voiceSessionId ? (
+        <div className="mt-4">
+          <VoiceSession
+            conversationId={conversationId}
+            sessionId={voiceSessionId}
+            onEnd={() => {
+              setVoiceActive(false);
+              setVoiceSessionId(null);
+              refreshMessages();
+            }}
+          />
+        </div>
       ) : (
         <div className="mt-4 space-y-2">
           <form
@@ -458,10 +514,33 @@ export function ChatScreen({
               Talk to a person
             </button>
             <div className="flex items-center gap-3">
-              <span className="inline-flex items-center gap-1">
+              <button
+                type="button"
+                onClick={async () => {
+                  try {
+                    const res = await fetch("/api/voice/token", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ conversationId }),
+                    });
+                    if (!res.ok) {
+                      const data = await res.json();
+                      toast.error(data.error ?? "Failed to start voice call.");
+                      return;
+                    }
+                    const { sessionId: sid } = await res.json();
+                    setVoiceSessionId(sid);
+                    setVoiceActive(true);
+                  } catch {
+                    toast.error("Failed to start voice call.");
+                  }
+                }}
+                disabled={isClosed}
+                className="inline-flex items-center gap-1 rounded-lg px-2 py-1 font-medium text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
+              >
                 <Mic className="size-3.5" aria-hidden />
-                Voice coming soon
-              </span>
+                Start voice
+              </button>
               <button
                 type="button"
                 onClick={handleClose}
@@ -484,6 +563,26 @@ export function ChatScreen({
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
+            {businessServices.length > 0 && (
+              <div className="grid gap-2">
+                <Label htmlFor="request-service">Service (optional)</Label>
+                <Select
+                  value={requestServiceId}
+                  onValueChange={(v) => setRequestServiceId(v ?? "")}
+                >
+                  <SelectTrigger id="request-service">
+                    <SelectValue placeholder="Any / General" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {businessServices.map((svc) => (
+                      <SelectItem key={svc.id} value={svc.id}>
+                        {svc.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             <div className="grid gap-2">
               <Label htmlFor="request-type">Request type</Label>
               <Select value={requestType} onValueChange={(v) => setRequestType(v ?? "")}>

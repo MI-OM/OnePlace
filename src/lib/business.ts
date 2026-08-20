@@ -1,5 +1,21 @@
 import { createAnonClient } from "@/lib/supabase/anon";
 
+export type CatalogCategory = {
+  id: string;
+  name: string;
+  slug: string;
+  icon: string | null;
+  parentId: string | null;
+  parentName: string | null;
+};
+
+export type CatalogService = {
+  id: string;
+  name: string;
+  description: string | null;
+  categoryId: string | null;
+};
+
 export type BusinessCategory = {
   id: string;
   name: string;
@@ -147,7 +163,7 @@ export async function getBusinessBySlug(
         hours:business_hours(day_of_week, is_closed, opens_at, closes_at),
         reviews:reviews(
           id, rating, title, body, created_at,
-          reviewer:profiles(id, display_name, first_name, last_name)
+          reviewer:profiles!reviewer_id(id, display_name, first_name, last_name)
         )
       `,
     )
@@ -242,4 +258,40 @@ export async function getBusinessBySlug(
     rating,
     reviewCount,
   };
+}
+
+export async function getCatalogCategories(): Promise<CatalogCategory[]> {
+  const supabase = createAnonClient();
+  const { data } = await supabase
+    .from("categories")
+    .select("id, name, slug, icon, parent_id")
+    .eq("is_active", true)
+    .order("sort_order");
+
+  const rows = data ?? [];
+  const parentMap = new Map(rows.map((r) => [r.id, r.name]));
+
+  return rows.map((row) => ({
+    id: row.id,
+    name: row.name,
+    slug: row.slug,
+    icon: row.icon,
+    parentId: row.parent_id,
+    parentName: row.parent_id ? (parentMap.get(row.parent_id) ?? null) : null,
+  }));
+}
+
+export async function getCatalogServices(): Promise<CatalogService[]> {
+  const supabase = createAnonClient();
+  const { data } = await supabase
+    .from("services")
+    .select("id, name, description, category_id")
+    .eq("is_active", true);
+
+  return (data ?? []).map((row) => ({
+    id: row.id,
+    name: row.name,
+    description: row.description,
+    categoryId: row.category_id,
+  }));
 }

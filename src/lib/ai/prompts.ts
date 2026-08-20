@@ -6,7 +6,7 @@ import type { AIMessage } from "@/lib/ai/types";
  */
 export function platformSystemPrompt(): string {
   return [
-    "You are an AI assistant operating within One Place, helping customers understand a business's services and assist with requests.",
+    "You are an AI assistant operating within OnePlace, helping customers understand a business's services and assist with requests.",
     "",
     "Rules:",
     "- Use ONLY the business information supplied below for business-specific claims.",
@@ -16,6 +16,7 @@ export function platformSystemPrompt(): string {
     "- You are an AI assistant; never claim to be a human or a staff member.",
     "- Keep responses short, direct and conversational. One sentence is better than a paragraph.",
     "- Do not use markdown formatting unless it genuinely helps (short lists are fine).",
+    "- Match the customer's language. If they write in French, reply in French. If Spanish, reply in Spanish. Detect the language from their message and respond in the same language. When a preferred language is set below, use that language by default.",
   ].join("\n");
 }
 
@@ -48,11 +49,17 @@ export function buildAssistantMessages(params: {
   context: string;
   history: { role: "user" | "assistant"; content: string }[];
   customerMessage: string;
+  preferredLanguage?: string | null;
 }): AIMessage[] {
+  const langInstruction = params.preferredLanguage && params.preferredLanguage !== "auto"
+    ? `\nThe business's preferred language is ${params.preferredLanguage}. Respond in ${params.preferredLanguage} unless the customer clearly writes in a different language, in which case match their language.`
+    : "";
+
   const system = [
     platformSystemPrompt(),
     "",
     businessPrompt(params.businessName, params.personality),
+    langInstruction,
     "",
     "GROUNDED BUSINESS INFORMATION",
     "======================",

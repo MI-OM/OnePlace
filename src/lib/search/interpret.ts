@@ -1,5 +1,5 @@
 /**
- * Search query interpretation for One Place.
+ * Search query interpretation for OnePlace.
  *
  * Customers search naturally ("I want to have a massage", "Do you clean
  * houses?", "I need somewhere to get my hair done this Saturday"). The search
@@ -110,8 +110,14 @@ export function interpretQueryTerms(query: string, max = 4): string[] {
  * interface"). This is a deterministic keyword match (no per-search LLM).
  *
  * `terms` is empty when the query is NOT recognized as a single intent.
+ * `categoryHint` is an ILIKE pattern that matches the target category name
+ * (e.g. "house cleaning", "hair salon"). Used to retrieve by category first
+ * so text-matching false positives ("Cleanse" in a spa service) never surface.
  */
-export type Intent = { terms: string[] };
+export type Intent = {
+  terms: string[];
+  categoryHint?: string;
+};
 
 /**
  * Maps common customer phrasing to canonical service/category terms anchored in
@@ -119,33 +125,49 @@ export type Intent = { terms: string[] };
  * Barber Shop, Nails & Beauty, Day Spa, Massage Therapy, Health & Wellness,
  * Home & Living, House Cleaning, Home Repair, Fitness & Gym).
  *
+ * `categoryHint` is an ILIKE pattern used to look up the matching category in
+ * the DB. We filter by category first, then fall back to text search only when
+ * no businesses exist in that category. This prevents ILIKE false positives
+ * like "Cleanse" (a spa term) matching a "clean" (janitorial) search.
+ *
  * Each entry wins on its pattern only; ordering is most specific first so a
  * more specific service (e.g. "manicure") takes priority over a broad one.
  */
-const INTENT_PATTERNS: ReadonlyArray<{ test: RegExp; terms: string[] }> = [
-  { test: /\b(manucure|manicure|nail\s*(polish|fails|art|tech)|\bnail\b|gel\s+nail)\b/i, terms: ["nails"] },
-  { test: /\b(hair|hairs|haircut|hairstylist|hairdresser|hairoist|barber|bob|balayage|highlights|highlight|color|colour|cut|trim|fades|fade|taper|undercut|buzz)\b/i, terms: ["hair"] },
-  { test: /\b(massag(e|ing|age)|massagist|massage\s*therapy|deep\s+tissue|hot\s+stone|aromatherapy)\b/i, terms: ["massage"] },
-  { test: /\b(spa|day\s*sp|facial|wellness|sauna)\b/i, terms: ["spa"] },
-  { test: /\b(clean(?:ing|er|ers)?|housekeeping|vacu?um|dust|mop|maid|janitor|move\s*out|deep\s*clean|office\s*clean|post|construction)\b/i, terms: ["clean"] },
-  { test: /\b(repair|plumb|plumbing|plumber|electrician|handyman|carpenter|paint(er|ing)|roof|furniture|appliance|leak|broken|fix|installation|tile|carpet)\b/i, terms: ["repair"] },
-  { test: /\b(gym|fitness|workout|trainer|personal\s*trainer|weights|cardio|treadmill|recreation)\b/i, terms: ["fitness"] },
+const INTENT_PATTERNS: ReadonlyArray<{ test: RegExp; terms: string[]; categoryHint?: string }> = [
+  // ── Body-part / beauty services first ──────────────────────────────────
+  // These are checked BEFORE broad action verbs ("clean", "fix") so that
+  // "clean my face" maps to Day Spa, not House Cleaning.  The key insight:
+  // the *object* of the verb disambiguates intent — "face" → spa, "house" →
+  // cleaning, "car" → no category (text fallback).
+  { test: /\b(manucure|manicure|nail\s*(polish|fails|art|tech)|\bnail\b|gel\s+nail)\b/i, terms: ["nails"], categoryHint: "nail" },
+  { test: /\b(hair|hairs|haircut|hairstylist|hairdresser|hairoist|bob|balayage|highlights|highlight|color|colour|cut|trim|fades|fade|taper|undercut|buzz)\b/i, terms: ["hair"], categoryHint: "hair" },
+  { test: /\b(barber)\b/i, terms: ["barber"], categoryHint: "barber" },
+  { test: /\b(massag(e|ing|age)|massagist|massage\s*therapy|deep\s+tissue|hot\s+stone|aromatherapy)\b/i, terms: ["massage"], categoryHint: "massage" },
+  // Spa / skincare / body treatments. Includes body parts ("face", "skin",
+  // "body") and treatment verbs ("wax", "scrub", "exfoliate", "peel") so
+  // that queries like "clean my face", "wax my legs", "scrub my skin" map
+  // to Day Spa rather than House Cleaning or Home Repair.
+  { test: /\b(spa|day\s*sp|facials?|wax(?:ing|ed)?|skin|skins|faces?|bod(?:y|ies)|peel|scrub(?:s|bing)?|exfoliat(?:e|ing|ion)|tint(?:ing|ed)?|lash(?:es)?|brow(?:s)?|sauna|steam(?:ing)?|wrap(?:s)?|polish(?:ing)?|glo(?:w|wing))\b/i, terms: ["spa"], categoryHint: "day spa" },
+  // ── Broad action verbs (after body-part disambiguation) ────────────────
+  { test: /\b(clean(?:ing|er|ers)?|housekeeping|vacu?um|dust(?:ing|ed)?|mop(?:ping|ped)?|maid|janitor|move\s*out|deep\s*clean|office\s*clean|post\s*construction)\b/i, terms: ["clean"], categoryHint: "house cleaning" },
+  { test: /\b(repair|plumb(?:ing|er)?|electrician|handyman|carpenter|paint(?:er|ing)|roof(?:ing)?|furniture|appliance|leak|broken|fix|installation|tile|carpet)\b/i, terms: ["repair"], categoryHint: "home repair" },
+  { test: /\b(gym|fitness|workout|trainer|personal\s*trainer|weights|cardio|treadmill|recreation)\b/i, terms: ["fitness"], categoryHint: "fitness" },
   // Event + party planning. We return several synonymous canonical terms so
   // the search matches however the future category/service is named — e.g. an
   // "Event Planning" category (contains "planning"), a "Wedding Planner"
   // service (contains "planner"/"wedding"), or a "Catering" service. The SQL
   // OR-fallback matches ANY of these terms, so new categories like these can
   // be added in the DB without touching this code.
-  { test: /\b(wedding|marriage|engagement|anniversary|birthday|party|event|cebration|cater(ing|er)?|reception|venue|dj|entertainment|planner|planning)\b/i, terms: ["planner", "planning", "event", "wedding", "catering"] },
-  { test: /\b(health|nutrition|diet|physical\s*therapy|chiropractor|osteopath)\b/i, terms: ["wellness"] },
+  { test: /\b(wedding|marriage|engagement|anniversary|birthday|party|event|cebration|cater(?:ing|er)?|reception|venue|dj|entertainment|planner|planning)\b/i, terms: ["planner", "planning", "event", "wedding", "catering"] },
+  { test: /\b(health|nutrition|diet|physical\s*therapy|chiropractor|osteopath)\b/i, terms: ["wellness"], categoryHint: "health" },
 ];
 
 /** Returns canonical terms for a single service/category intent, or `{}`. */
 export function classifyIntent(query: string): Intent {
   if (!query) return { terms: [] };
-  for (const { test, terms } of INTENT_PATTERNS) {
+  for (const { test, terms, categoryHint } of INTENT_PATTERNS) {
     if (test.test(query)) {
-      return { terms };
+      return { terms, categoryHint };
     }
   }
   return { terms: [] };

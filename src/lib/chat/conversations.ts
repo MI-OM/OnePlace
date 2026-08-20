@@ -3,6 +3,7 @@ import { getAIProvider } from "@/lib/ai/provider";
 import { buildAssistantMessages } from "@/lib/ai/prompts";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
+import { notifyHumanHandoff } from "@/lib/notifications";
 
 export type ConversationMessage = {
   id: string;
@@ -269,7 +270,7 @@ export async function sendCustomerMessage(
     throw new Error("Message failed to send.");
   }
 
-  const context = await loadBusinessContext(conversation.business_id);
+  const context = await loadBusinessContext(conversation.business_id, content);
   const shouldReply =
     context.aiEnabled && conversation.status !== "human_connected";
 
@@ -343,7 +344,7 @@ export async function requestHumanHandoff(
 
   const { data: conversation } = await supabase
     .from("conversations")
-    .select("status")
+    .select("status, customer_id, business_id")
     .eq("id", conversationId)
     .maybeSingle();
 
@@ -366,6 +367,26 @@ export async function requestHumanHandoff(
     content:
       "We've let the team know you'd like to talk. Someone will join when available — you can keep chatting here or leave a message.",
   });
+
+  // Notify business members
+  try {
+    const { data: profile } = await service
+      .from("profiles")
+      .select("first_name, last_name, display_name")
+      .eq("id", conversation.customer_id)
+      .maybeSingle();
+    const customerName =
+      profile?.display_name ??
+      ([profile?.first_name, profile?.last_name].filter(Boolean).join(" ") ||
+        "A customer");
+    await notifyHumanHandoff({
+      businessId: conversation.business_id,
+      conversationId,
+      customerName,
+    });
+  } catch {
+    // notification failure should not block the handoff
+  }
 
   return { ok: true };
 }

@@ -9,7 +9,7 @@ import {
 import { ChatScreen } from "@/components/chat/chat-screen";
 
 export const metadata: Metadata = {
-  title: "Chat — One Place",
+  title: "Chat — OnePlace",
 };
 
 export default async function ConversationPage({
@@ -33,6 +33,7 @@ export default async function ConversationPage({
   return (
     <ChatScreen
       conversationId={conversation.id}
+      businessId={conversation.businessId}
       businessName={conversation.businessName}
       businessSlug={conversation.businessSlug}
       initialStatus={conversation.status}

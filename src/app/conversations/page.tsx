@@ -8,7 +8,7 @@ import { getMyConversations } from "@/lib/chat/conversations";
 import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = {
-  title: "Conversations — One Place",
+  title: "Conversations — OnePlace",
   description: "Your conversations with local businesses.",
 };
 

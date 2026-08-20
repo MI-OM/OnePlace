@@ -12,7 +12,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "One Place — Find local services",
+  title: "OnePlace — Find local services",
   description:
     "Discover local businesses, explore their services, and get answers without making five different calls.",
 };

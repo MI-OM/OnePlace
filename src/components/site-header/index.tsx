@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getUser } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { UserMenu } from "@/components/site-header/user-menu";
+import { NotificationBell } from "@/components/notifications/notification-bell";
 
 export async function SiteHeader() {
   const user = await getUser();
@@ -14,7 +15,7 @@ export async function SiteHeader() {
           href="/"
           className="text-lg font-semibold tracking-tight text-foreground"
         >
-          One Place
+          OnePlace
         </Link>
 
         <nav className="hidden items-center gap-1 sm:flex">
@@ -36,10 +37,13 @@ export async function SiteHeader() {
 
         <div className="ml-auto flex items-center gap-2">
           {user ? (
-            <UserMenu
-              name={user.user_metadata?.display_name ?? null}
-              email={user.email ?? null}
-            />
+            <>
+              <NotificationBell />
+              <UserMenu
+                name={user.user_metadata?.display_name ?? null}
+                email={user.email ?? null}
+              />
+            </>
           ) : (
             <>
               <Button

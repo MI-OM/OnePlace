@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { SignInForm } from "@/components/auth/sign-in-form";
 
 export const metadata: Metadata = {
-  title: "Sign in — One Place",
+  title: "Sign in — OnePlace",
 };
 
 export default async function LoginPage({
@@ -19,7 +19,7 @@ export default async function LoginPage({
       <CardHeader className="space-y-2 text-center">
         <h1 className="text-2xl font-semibold tracking-tight">Welcome back</h1>
         <p className="text-sm text-muted-foreground">
-          Sign in to continue to One Place.
+          Sign in to continue to OnePlace.
         </p>
       </CardHeader>
       <CardContent>

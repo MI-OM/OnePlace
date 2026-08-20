@@ -1,0 +1,2 @@
+-- OnePlace seed data
+-- No seed data required — all data is inserted via migrations.

@@ -4,7 +4,7 @@ import { MessageCircle, PhoneCall, Store } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = {
-  title: "For businesses — One Place",
+  title: "For businesses — OnePlace",
   description:
     "Put your services in one place and make it easier for customers to find and contact you.",
 };
@@ -24,14 +24,14 @@ export default function ForBusinessesPage() {
           <div className="mx-auto mt-8 flex max-w-md flex-col gap-3 sm:flex-row sm:justify-center">
             <Button
               size="lg"
-              render={<a href="/signup" />}
+              render={<a href="/onboarding/business">List your business</a>}
             >
               List your business
             </Button>
             <Button
               variant="outline"
               size="lg"
-              render={<a href="/search" />}
+              render={<a href="/search">See how customers search</a>}
             >
               See how customers search
             </Button>
@@ -46,7 +46,7 @@ export default function ForBusinessesPage() {
       <section className="bg-muted/40 px-6 py-16">
         <div className="mx-auto w-full max-w-5xl">
           <h2 className="text-center text-2xl font-semibold tracking-tight">
-            What One Place does for your business
+            What OnePlace does for your business
           </h2>
           <div className="mt-10 grid gap-8 sm:grid-cols-3">
             <div className="text-center">
@@ -89,9 +89,9 @@ export default function ForBusinessesPage() {
             variant="secondary"
             size="lg"
             className="mt-8 bg-amber-warm text-primary-foreground hover:bg-amber-warm/90"
-            render={<a href="/signup" />}
+            render={<a href="/onboarding/business">Bring your business to OnePlace</a>}
           >
-            Bring your business to One Place
+            Bring your business to OnePlace
           </Button>
         </div>
       </section>

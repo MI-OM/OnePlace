@@ -15,10 +15,10 @@ export async function generateMetadata({
   const { slug } = await params;
   const category = await getCategoryBySlug(slug);
   if (!category) {
-    return { title: "Category not found — One Place" };
+    return { title: "Category not found — OnePlace" };
   }
   return {
-    title: `${category.name} in St. John's — One Place`,
+    title: `${category.name} in St. John's — OnePlace`,
     description:
       category.description ??
       `Find ${category.name.toLowerCase()} businesses and services nearby.`,

@@ -3,37 +3,49 @@ import { ArrowUpRight } from "lucide-react";
 
 import type { Category } from "@/lib/discovery";
 import { CategoryIcon } from "@/components/discovery/category-icon";
-import { Card } from "@/components/ui/card";
 
 export function CategoryCard({ category }: { category: Category }) {
   return (
     <Link
       href={`/categories/${category.slug}`}
-      className="group block h-full focus-visible:outline-none"
+      className="group relative flex h-48 items-end overflow-hidden rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
-      <Card className="h-full p-5 transition-colors group-hover:bg-muted/40 group-focus-visible:ring-2 group-focus-visible:ring-ring">
-        <div className="flex items-start justify-between gap-2">
-          <span className="flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-            <CategoryIcon name={category.icon} className="size-5" />
-          </span>
-          <ArrowUpRight
-            className="size-4 text-muted-foreground transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
-            aria-hidden
-          />
-        </div>
-        <h3 className="mt-4 font-heading text-base font-medium">
+      {/* Background image or gradient fallback */}
+      {category.imageUrl ? (
+        <img
+          src={category.imageUrl}
+          alt=""
+          className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+          loading="lazy"
+        />
+      ) : (
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-primary/10 to-muted" />
+      )}
+
+      {/* Dark overlay for text readability */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+
+      {/* Icon badge */}
+      <span className="absolute right-3 top-3 flex size-9 items-center justify-center rounded-full bg-white/20 text-white backdrop-blur-sm transition-transform group-hover:scale-110">
+        <CategoryIcon name={category.icon} className="size-4" />
+      </span>
+
+      {/* Arrow */}
+      <ArrowUpRight
+        className="absolute right-3 bottom-3 size-4 text-white/60 transition-all group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-white"
+        aria-hidden
+      />
+
+      {/* Text content */}
+      <div className="relative z-10 p-5">
+        <h3 className="font-heading text-lg font-semibold text-white">
           {category.name}
         </h3>
-        {category.description && (
-          <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
-            {category.description}
-          </p>
-        )}
-        <p className="mt-2 text-xs text-muted-foreground">
+        <p className="mt-0.5 text-sm text-white/80">
           {category.businessCount}{" "}
           {category.businessCount === 1 ? "business" : "businesses"}
         </p>
-      </Card>
+      </div>
     </Link>
   );
 }

@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { OnboardingForm } from "@/components/auth/onboarding-form";
 
 export const metadata = {
-  title: "Set up your account — One Place",
+  title: "Set up your account — OnePlace",
 };
 
 export default async function OnboardingPage() {
@@ -21,7 +21,7 @@ export default async function OnboardingPage() {
               Let&apos;s get you set up
             </h1>
             <p className="text-sm text-muted-foreground">
-              A few details will help us make One Place more useful for you.
+              A few details will help us make OnePlace more useful for you.
             </p>
           </CardHeader>
           <CardContent>

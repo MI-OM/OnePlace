@@ -3,21 +3,34 @@ import Link from "next/link";
 import { SearchX } from "lucide-react";
 import { Suspense } from "react";
 
-import { searchBusinesses } from "@/lib/discovery";
+import { searchBusinesses, enrichWithDistance } from "@/lib/discovery";
 import { BusinessCard } from "@/components/discovery/business-card";
 import { SearchBox } from "@/components/discovery/search-box";
+import { LocationButton } from "@/components/discovery/location-button";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export const metadata: Metadata = {
-  title: "Search services — One Place",
+  title: "Search services — OnePlace",
   description:
     "Search local businesses by service, category or description.",
 };
 
 const SUGGESTIONS = ["massage", "hair", "cleaning", "fitness", "barber"];
 
-async function SearchResults({ query }: { query: string }) {
-  const results = await searchBusinesses(query);
+async function SearchResults({
+  query,
+  lat,
+  lng,
+}: {
+  query: string;
+  lat?: number;
+  lng?: number;
+}) {
+  let results = await searchBusinesses(query);
+
+  if (lat != null && lng != null && results.length > 0) {
+    results = await enrichWithDistance(results, lat, lng);
+  }
 
   if (results.length === 0) {
     return (
@@ -65,10 +78,12 @@ function ResultsSkeleton() {
 export default async function SearchPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string; lat?: string; lng?: string }>;
 }) {
   const params = await searchParams;
   const query = (params.q ?? "").trim();
+  const lat = params.lat ? parseFloat(params.lat) : undefined;
+  const lng = params.lng ? parseFloat(params.lng) : undefined;
 
   return (
     <div className="mx-auto w-full max-w-6xl px-6 py-10">
@@ -79,17 +94,26 @@ export default async function SearchPage({
         Search local businesses by service, category or description.
       </p>
 
-      <div className="mt-6 max-w-xl">
-        <SearchBox
-          defaultValue={query}
-          autoFocus={!query}
-          submitLabel="Search"
-        />
+      <div className="mt-6 flex items-end gap-3 max-w-xl">
+        <div className="flex-1">
+          <SearchBox
+            defaultValue={query}
+            autoFocus={!query}
+            submitLabel="Search"
+          />
+        </div>
+        <LocationButton />
       </div>
+
+      {lat != null && lng != null && (
+        <p className="mt-2 text-xs text-muted-foreground">
+          Sorted by distance from your location.
+        </p>
+      )}
 
       {query ? (
         <Suspense fallback={<ResultsSkeleton />}>
-          <SearchResults query={query} />
+          <SearchResults query={query} lat={lat} lng={lng} />
         </Suspense>
       ) : (
         <p className="mt-10 text-sm text-muted-foreground">
