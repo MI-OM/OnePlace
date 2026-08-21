@@ -55,7 +55,7 @@ export default function MinimalTemplate({
 
   return (
     <div
-      className="min-h-screen bg-white text-neutral-900 antialiased"
+      className="min-h-screen bg-white text-neutral-900 antialiased pb-20"
       style={{ "--primary": b.websitePrimaryColor, "--accent": b.websiteAccentColor } as React.CSSProperties}
     >
       {/* Header */}
@@ -265,6 +265,38 @@ export default function MinimalTemplate({
             </a>
           )}
           {address && <p className="mt-2 text-sm text-neutral-400">{address}</p>}
+        </div>
+      </section>
+
+      {/* CTA Bar */}
+      <section className="sticky bottom-0 z-40 border-t border-neutral-200 bg-white px-6 py-4">
+        <div className="mx-auto flex max-w-2xl flex-wrap items-center justify-between gap-4">
+          <p className="text-sm text-neutral-500">Ready to get started?</p>
+          <div className="flex flex-wrap gap-3">
+            {b.phone && (
+              <a
+                href={`tel:${b.phone}`}
+                className="rounded-full border border-neutral-200 px-5 py-2 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-50"
+              >
+                Call {b.phone}
+              </a>
+            )}
+            {b.email && (
+              <a
+                href={`mailto:${b.email}`}
+                className="rounded-full border border-neutral-200 px-5 py-2 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-50"
+              >
+                Email
+              </a>
+            )}
+            <a
+              href={`/businesses/${b.slug}`}
+              className="rounded-full px-6 py-2 text-sm font-semibold text-white transition-colors hover:opacity-90"
+              style={{ backgroundColor: "var(--primary)" }}
+            >
+              Ask a Question
+            </a>
+          </div>
         </div>
       </section>
 

@@ -53,6 +53,12 @@ export default async function BusinessSettingsPage({
     .eq("business_id", businessId)
     .order("sort_order");
 
+  const { data: products } = await service
+    .from("business_products")
+    .select("id, name, description, price, price_type, min_price, max_price, currency, image_url, url, product_type, sort_order, is_active")
+    .eq("business_id", businessId)
+    .order("sort_order");
+
   return (
     <main className="mx-auto min-h-screen max-w-3xl px-4 py-10">
       <Button render={<Link href={`/dashboard/${businessId}`} />} variant="ghost" size="sm" className="mb-6 -ml-2">
@@ -111,6 +117,21 @@ export default async function BusinessSettingsPage({
           url: p.url,
           altText: p.alt_text,
           sortOrder: p.sort_order,
+        }))}
+        products={(products ?? []).map((p) => ({
+          id: p.id,
+          name: p.name,
+          description: p.description,
+          price: p.price,
+          priceType: p.price_type,
+          minPrice: p.min_price,
+          maxPrice: p.max_price,
+          currency: p.currency,
+          imageUrl: p.image_url,
+          url: p.url,
+          productType: p.product_type,
+          sortOrder: p.sort_order,
+          isActive: p.is_active,
         }))}
       />
     </main>

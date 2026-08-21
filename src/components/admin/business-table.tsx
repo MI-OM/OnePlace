@@ -1,7 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useTransition } from "react";
-import { Check, Ban, Shield, ShieldOff, Star, Megaphone } from "lucide-react";
+import { Check, Ban, Shield, ShieldOff, Star, Megaphone, Pencil } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -69,6 +70,15 @@ function BusinessRow({ business }: { business: AdminBusiness }) {
         </div>
 
         <div className="flex flex-wrap gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            render={<Link href={`/admin/businesses/${business.id}/edit`} />}
+          >
+            <Pencil className="mr-1 size-3" aria-hidden />
+            Edit
+          </Button>
+
           {business.verificationStatus === "pending" && (
             <>
               <Button

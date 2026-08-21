@@ -357,6 +357,105 @@ export async function listFeaturedBusinesses(
   });
 }
 
+export async function listSponsoredBusinesses(
+  maxResults = 8,
+): Promise<BusinessSummary[]> {
+  const supabase = createAnonClient();
+  const { data, error } = await supabase
+    .from("businesses")
+    .select("id, name, slug, description, city, province, logo_url, cover_image_url, is_sponsored")
+    .eq("status", "active")
+    .is("deleted_at", null)
+    .eq("is_sponsored", true)
+    .order("sponsored_at", { ascending: false })
+    .limit(maxResults);
+
+  if (error) {
+    throw new Error(`Couldn't load sponsored businesses: ${error.message}`);
+  }
+
+  if (!data || data.length === 0) return [];
+
+  const ids = data.map((b) => b.id);
+
+  const [catLinks, reviews, services] = await Promise.all([
+    supabase
+      .from("business_categories")
+      .select("business_id, is_primary, category:categories(name, slug)")
+      .in("business_id", ids)
+      .order("is_primary", { ascending: false }),
+    supabase
+      .from("reviews")
+      .select("business_id, rating")
+      .in("business_id", ids)
+      .eq("status", "published"),
+    supabase
+      .from("business_services")
+      .select("business_id, price")
+      .in("business_id", ids)
+      .eq("is_active", true),
+  ]);
+
+  const primaryCatMap = new Map<string, { name: string; slug: string }>();
+  for (const link of catLinks.data ?? []) {
+    if (link.is_primary && !primaryCatMap.has(link.business_id)) {
+      const cat = Array.isArray(link.category) ? link.category[0] : link.category;
+      if (cat) primaryCatMap.set(link.business_id, { name: cat.name, slug: cat.slug });
+    }
+  }
+  if (primaryCatMap.size === 0) {
+    for (const link of catLinks.data ?? []) {
+      if (!primaryCatMap.has(link.business_id)) {
+        const cat = Array.isArray(link.category) ? link.category[0] : link.category;
+        if (cat) primaryCatMap.set(link.business_id, { name: cat.name, slug: cat.slug });
+      }
+    }
+  }
+
+  const ratingMap = new Map<string, { total: number; count: number }>();
+  for (const r of reviews.data ?? []) {
+    const entry = ratingMap.get(r.business_id) ?? { total: 0, count: 0 };
+    entry.total += r.rating;
+    entry.count += 1;
+    ratingMap.set(r.business_id, entry);
+  }
+
+  const priceMap = new Map<string, number>();
+  for (const s of services.data ?? []) {
+    if (s.price != null) {
+      const cur = priceMap.get(s.business_id);
+      if (cur == null || s.price < cur) priceMap.set(s.business_id, s.price);
+    }
+  }
+
+  const servicesCountMap = new Map<string, number>();
+  for (const s of services.data ?? []) {
+    servicesCountMap.set(s.business_id, (servicesCountMap.get(s.business_id) ?? 0) + 1);
+  }
+
+  return data.map((b) => {
+    const entry = ratingMap.get(b.id);
+    const avg = entry ? Math.round((entry.total / entry.count) * 10) / 10 : null;
+    return {
+      id: b.id,
+      name: b.name,
+      slug: b.slug,
+      description: b.description,
+      primaryCategoryName: primaryCatMap.get(b.id)?.name ?? null,
+      primaryCategorySlug: primaryCatMap.get(b.id)?.slug ?? null,
+      city: b.city,
+      province: b.province,
+      rating: avg,
+      reviewCount: entry?.count ?? 0,
+      priceFrom: priceMap.get(b.id) ?? null,
+      servicesCount: servicesCountMap.get(b.id) ?? 0,
+      logoUrl: b.logo_url,
+      coverImageUrl: b.cover_image_url,
+      isSponsored: b.is_sponsored,
+    };
+  });
+}
+
 export async function getTopRatedBusinesses(
   maxResults = 8,
 ): Promise<BusinessSummary[]> {

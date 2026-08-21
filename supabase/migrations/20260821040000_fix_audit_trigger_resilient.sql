@@ -1,4 +1,5 @@
--- L2: Audit logging — generic trigger that captures key mutations.
+-- Fix: make audit_log_changes() resilient to FK violations during bulk seeds.
+-- Audit logging should never break the actual operation.
 
 create or replace function public.audit_log_changes()
 returns trigger
@@ -69,28 +70,3 @@ begin
     return coalesce(NEW, OLD);
 end;
 $$;
-
--- Apply to business-critical tables.
-create trigger audit_businesses
-after insert or update or delete on public.businesses
-for each row execute function public.audit_log_changes();
-
-create trigger audit_business_members
-after insert or update or delete on public.business_members
-for each row execute function public.audit_log_changes();
-
-create trigger audit_reviews
-after insert or update or delete on public.reviews
-for each row execute function public.audit_log_changes();
-
-create trigger audit_conversations
-after insert or update on public.conversations
-for each row execute function public.audit_log_changes();
-
-create trigger audit_user_roles
-after insert or update or delete on public.user_roles
-for each row execute function public.audit_log_changes();
-
-create trigger audit_service_requests
-after insert or update on public.service_requests
-for each row execute function public.audit_log_changes();

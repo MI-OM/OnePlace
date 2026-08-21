@@ -4,6 +4,7 @@ import { Compass, MessageCircle, Phone } from "lucide-react";
 import {
   getCategories,
   listFeaturedBusinesses,
+  listSponsoredBusinesses,
   getTopRatedBusinesses,
   type BusinessSummary,
   type Category,
@@ -23,16 +24,19 @@ export default async function Home() {
   let categories: Category[] = [];
   let featured: BusinessSummary[] = [];
   let topRated: BusinessSummary[] = [];
+  let sponsored: BusinessSummary[] = [];
 
   try {
-    const [allCategories, allFeatured, allTopRated] = await Promise.all([
+    const [allCategories, allFeatured, allTopRated, allSponsored] = await Promise.all([
       getCategories(),
       listFeaturedBusinesses(8),
       getTopRatedBusinesses(8),
+      listSponsoredBusinesses(8),
     ]);
     categories = allCategories;
     featured = allFeatured;
     topRated = allTopRated;
+    sponsored = allSponsored;
   } catch {
     // Discovery sections render empty-state messaging when unavailable.
   }
@@ -94,6 +98,32 @@ export default async function Home() {
             <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {browseCategories.map((category) => (
                 <CategoryCard key={category.id} category={category} />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ── Sponsored Businesses ──────────────────────────────────────── */}
+      {sponsored.length > 0 && (
+        <section className="border-b border-amber-200 bg-amber-50/50 px-6 py-16 dark:border-amber-900 dark:bg-amber-950/20">
+          <div className="mx-auto w-full max-w-6xl">
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-2xl font-semibold tracking-tight">
+                  Sponsored
+                </h2>
+                <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-900 dark:text-amber-200">
+                  Promoted
+                </span>
+              </div>
+              <p className="mt-1 text-muted-foreground">
+                Local businesses supporting OnePlace.
+              </p>
+            </div>
+            <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {sponsored.map((business) => (
+                <BusinessCard key={business.id} business={business} />
               ))}
             </div>
           </div>

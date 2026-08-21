@@ -334,7 +334,10 @@ const updateProductsSchema = z.object({
       maxPrice: z.number().optional(),
       currency: z.string().default("CAD"),
       imageUrl: z.string().optional(),
-      url: z.string().url().optional().refine(() => true, "Valid URL required when provided").optional(),
+      url: z.string().optional().refine(
+        (v) => !v || /^https?:\/\/.+/.test(v),
+        "URL must start with http:// or https://"
+      ),
       productType: z.enum(["product", "digital", "gift_card", "service_addon"]).default("product"),
       sortOrder: z.number().int().default(0),
       isActive: z.boolean().default(true),

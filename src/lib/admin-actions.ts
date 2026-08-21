@@ -231,3 +231,52 @@ export async function toggleSponsored(
     return { ok: false, error: String(e) };
   }
 }
+
+export async function updateBusinessContent(
+  businessId: string,
+  data: {
+    name?: string;
+    description?: string;
+    phone?: string;
+    email?: string;
+    websiteUrl?: string;
+    addressLine1?: string;
+    city?: string;
+    province?: string;
+    postalCode?: string;
+    country?: string;
+    timezone?: string;
+    foundedYear?: number | null;
+  },
+): Promise<{ ok: boolean; error?: string }> {
+  try {
+    await requireAdmin();
+    const service = createServiceClient();
+
+    const update: Record<string, unknown> = { updated_at: new Date().toISOString() };
+    if (data.name !== undefined) update.name = data.name;
+    if (data.description !== undefined) update.description = data.description || null;
+    if (data.phone !== undefined) update.phone = data.phone || null;
+    if (data.email !== undefined) update.email = data.email || null;
+    if (data.websiteUrl !== undefined) update.website_url = data.websiteUrl || null;
+    if (data.addressLine1 !== undefined) update.address_line1 = data.addressLine1 || null;
+    if (data.city !== undefined) update.city = data.city || null;
+    if (data.province !== undefined) update.province = data.province || null;
+    if (data.postalCode !== undefined) update.postal_code = data.postalCode || null;
+    if (data.country !== undefined) update.country = data.country || null;
+    if (data.timezone !== undefined) update.timezone = data.timezone;
+    if (data.foundedYear !== undefined) update.founded_year = data.foundedYear;
+
+    const { error } = await service
+      .from("businesses")
+      .update(update)
+      .eq("id", businessId);
+
+    if (error) return { ok: false, error: error.message };
+    revalidatePath("/admin/businesses");
+    revalidatePath(`/admin/businesses/${businessId}/edit`);
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: String(e) };
+  }
+}

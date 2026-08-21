@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
   updateBusinessProfile,
@@ -56,6 +57,7 @@ type Props = {
   services: { id: string; name: string; description: string | null; price: number | null; priceType: string | null; minPrice: number | null; maxPrice: number | null; durationMinutes: number | null }[];
   aiConfig: { greeting: string | null; personality: string | null; handoffEnabled: boolean; escalationEnabled: boolean; voiceEnabled: boolean } | null;
   photos?: { id: string; url: string; altText: string | null; sortOrder: number }[];
+  products?: { id: string; name: string; description: string | null; price: number | null; priceType: string | null; minPrice: number | null; maxPrice: number | null; currency: string | null; imageUrl: string | null; url: string | null; productType: string | null; sortOrder: number | null; isActive: boolean | null }[];
 };
 
 export function BusinessSettingsForm({
@@ -65,9 +67,11 @@ export function BusinessSettingsForm({
   services: initialServices,
   aiConfig: initialAI,
   photos: initialPhotos = [],
+  products: initialProducts = [],
 }: Props) {
   const [tab, setTab] = useState<Tab>("profile");
   const [pending, startTransition] = useTransition();
+  const router = useRouter();
 
   // Profile state
   const [name, setName] = useState(business.name);
@@ -117,12 +121,17 @@ export function BusinessSettingsForm({
   const [websitePrimaryColor, setWebsitePrimaryColor] = useState(business.websitePrimaryColor);
   const [websiteAccentColor, setWebsiteAccentColor] = useState(business.websiteAccentColor);
   const [productName, setProductName] = useState("");
+  const [productDescription, setProductDescription] = useState("");
   const [productUrl, setProductUrl] = useState("");
   const [productPrice, setProductPrice] = useState(0);
   const [productPriceType, setProductPriceType] = useState<"fixed" | "starting_from" | "range" | "quote_required">("fixed");
   const [productProductType, setProductProductType] = useState<"product" | "digital" | "gift_card" | "service_addon">("product");
   const [productSortOrder, setProductSortOrder] = useState(0);
   const [productIsActive, setProductIsActive] = useState(true);
+  const [productImageUrl, setProductImageUrl] = useState<string | null>(null);
+  const [editingProductId, setEditingProductId] = useState<string | null>(null);
+  const [existingProducts, setExistingProducts] = useState(initialProducts);
+  const [deletedProductIds, setDeletedProductIds] = useState<string[]>([]);
 
   const handleSaveProfile = () => {
     startTransition(async () => {
@@ -215,32 +224,74 @@ export function BusinessSettingsForm({
     });
   };
 
+  const resetProductForm = () => {
+    setProductName("");
+    setProductDescription("");
+    setProductUrl("");
+    setProductPrice(0);
+    setProductPriceType("fixed");
+    setProductProductType("product");
+    setProductSortOrder(0);
+    setProductIsActive(true);
+    setProductImageUrl(null);
+    setEditingProductId(null);
+  };
+
+  const handleEditProduct = (p: typeof existingProducts[number]) => {
+    setEditingProductId(p.id);
+    setProductName(p.name);
+    setProductDescription(p.description ?? "");
+    setProductUrl(p.url ?? "");
+    setProductPrice(p.price ?? 0);
+    setProductPriceType((p.priceType as typeof productPriceType) ?? "fixed");
+    setProductProductType((p.productType as typeof productProductType) ?? "product");
+    setProductSortOrder(p.sortOrder ?? 0);
+    setProductIsActive(p.isActive ?? true);
+    setProductImageUrl(p.imageUrl ?? null);
+  };
+
+  const handleDeleteProduct = (id: string) => {
+    setDeletedProductIds((prev) => [...prev, id]);
+    setExistingProducts((prev) => prev.filter((p) => p.id !== id));
+    if (editingProductId === id) resetProductForm();
+  };
+
   const handleSaveProducts = () => {
     startTransition(async () => {
       if (!productName.trim()) {
         toast.error("Product name is required.");
         return;
       }
+      const product = {
+        ...(editingProductId ? { id: editingProductId } : {}),
+        name: productName,
+        description: productDescription || undefined,
+        url: productUrl || undefined,
+        price: productPrice || undefined,
+        priceType: productPriceType,
+        productType: productProductType,
+        sortOrder: productSortOrder,
+        isActive: productIsActive,
+        currency: "CAD",
+        imageUrl: productImageUrl || undefined,
+      };
       const result = await updateBusinessProducts(businessId, {
-        products: [{
-          name: productName,
-          description: productUrl || undefined,
-          url: productUrl || undefined,
-          price: productPrice || undefined,
-          priceType: productPriceType,
-          productType: productProductType,
-          sortOrder: productSortOrder,
-          isActive: productIsActive,
-          currency: "CAD",
-        }],
-        deletedIds: [],
+        products: [product],
+        deletedIds: deletedProductIds,
       });
       if (result.error) {
         toast.error(result.error);
       } else {
-        toast.success("Products updated.");
+        toast.success(editingProductId ? "Product updated." : "Product added.");
+        resetProductForm();
+        setDeletedProductIds([]);
+        revalidateProducts();
       }
     });
+  };
+
+  const revalidateProducts = () => {
+    router.refresh();
   };
 
   return (
@@ -538,13 +589,54 @@ export function BusinessSettingsForm({
         {tab === "products" && (
           <>
             <div className="space-y-6">
-              <p className="text-sm text-muted-foreground mb-4">Add products that will appear on your generated website.</p>
+              {existingProducts.length > 0 && (
+                <div>
+                  <p className="text-sm font-medium mb-3">Existing products</p>
+                  <div className="space-y-2">
+                    {existingProducts.map((p) => (
+                      <div key={p.id} className="flex items-center justify-between rounded-lg border border-border p-3">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2">
+                            {p.imageUrl && (
+                              <img src={p.imageUrl} alt={p.name} className="size-10 rounded object-cover" />
+                            )}
+                            <div>
+                              <p className="font-medium truncate">{p.name}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {p.price != null ? `$${p.price}` : "Quote required"} · {p.productType ?? "product"}
+                                {!p.isActive && <span className="ml-2 text-amber-600">(inactive)</span>}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex gap-2 ml-3">
+                          <Button size="sm" variant="ghost" onClick={() => handleEditProduct(p)}>Edit</Button>
+                          <Button size="sm" variant="ghost" className="text-destructive" onClick={() => handleDeleteProduct(p.id)}>Delete</Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <div className="rounded-lg border border-border p-4">
+                <p className="text-sm font-medium mb-3">{editingProductId ? "Edit product" : "Add new product"}</p>
                 <div className="grid grid-cols-2 gap-4">
                   <Field label="Product name" value={productName} onChange={setProductName} />
-                  <Field label="External URL" value={productUrl} onChange={setProductUrl} />
+                  <Field label="External URL (payment link)" value={productUrl} onChange={setProductUrl} placeholder="https://..." />
                 </div>
-                <div className="grid grid-cols-2 gap-2">
+                <Field label="Description" value={productDescription} onChange={setProductDescription} textarea />
+                <div className="mt-3">
+                  <p className="text-sm mb-1.5">Product image</p>
+                  <ImageUpload
+                    bucket="business-images"
+                    path={`${businessId}/products`}
+                    value={productImageUrl}
+                    onChange={setProductImageUrl}
+                    label="Product image"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-2 mt-3">
                   <Field label="Price" value={String(productPrice ?? "")} onChange={(v) =>
                     setProductPrice(Number(v) || 0)}
                   />
@@ -572,9 +664,14 @@ export function BusinessSettingsForm({
                 <Field label="Sort order" value={String(productSortOrder)} onChange={(v) => setProductSortOrder(Number(v) || 0)} type="number" />
                 <Toggle label="Active" checked={productIsActive} onChange={setProductIsActive} />
               </div>
-              <Button onClick={handleSaveProducts} disabled={pending}>
-                {pending ? "Saving..." : "Save products"}
-              </Button>
+              <div className="flex gap-2">
+                <Button onClick={handleSaveProducts} disabled={pending}>
+                  {pending ? "Saving..." : editingProductId ? "Update product" : "Add product"}
+                </Button>
+                {editingProductId && (
+                  <Button variant="ghost" onClick={resetProductForm}>Cancel edit</Button>
+                )}
+              </div>
             </div>
           </>
         )}

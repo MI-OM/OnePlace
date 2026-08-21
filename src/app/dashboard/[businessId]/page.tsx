@@ -92,6 +92,14 @@ export default async function BusinessInboxPage({
           Knowledge
         </Button>
         <Button
+          render={<Link href={`/dashboard/${businessId}/requests`} />}
+          variant="ghost"
+          size="sm"
+        >
+          <ClipboardList className="mr-1.5 size-4" aria-hidden />
+          Requests
+        </Button>
+        <Button
           render={<Link href={`/dashboard/${businessId}/bookings`} />}
           variant="ghost"
           size="sm"
@@ -154,9 +162,12 @@ export default async function BusinessInboxPage({
             </div>
             <p className="mt-2 text-2xl font-semibold">{stats.totalRequests}</p>
             {stats.openRequests > 0 && (
-              <p className="text-xs text-muted-foreground">
+              <Link
+                href={`/dashboard/${businessId}/requests`}
+                className="text-xs text-primary hover:underline"
+              >
                 {stats.openRequests} open
-              </p>
+              </Link>
             )}
           </div>
           <div className="rounded-xl border border-border bg-card p-4">

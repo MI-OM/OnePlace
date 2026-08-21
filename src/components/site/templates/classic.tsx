@@ -102,7 +102,7 @@ export default function ClassicTemplate({
 
   return (
     <div
-      className="min-h-screen bg-white font-sans text-gray-900 antialiased"
+      className="min-h-screen bg-white font-sans text-gray-900 antialiased pb-20"
       style={{ "--primary": primary, "--accent": accent } as React.CSSProperties}
     >
       {/* ─── Hero ─── */}
@@ -457,6 +457,43 @@ export default function ClassicTemplate({
                 </div>
               </a>
             )}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── CTA Bar ─── */}
+      <section
+        className="sticky bottom-0 z-40 border-t px-6 py-4"
+        style={{ borderColor: `${primary}20`, backgroundColor: `${primary}f5` }}
+      >
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4">
+          <p className="text-sm font-medium text-white/80">
+            Ready to get started?
+          </p>
+          <div className="flex flex-wrap gap-3">
+            {business.phone && (
+              <a
+                href={`tel:${business.phone}`}
+                className="rounded-full border border-white/30 px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-white/10"
+              >
+                Call {business.phone}
+              </a>
+            )}
+            {business.email && (
+              <a
+                href={`mailto:${business.email}`}
+                className="rounded-full border border-white/30 px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-white/10"
+              >
+                Email
+              </a>
+            )}
+            <a
+              href={`/businesses/${business.slug}`}
+              className="rounded-full px-6 py-2 text-sm font-semibold text-gray-900 transition-colors hover:opacity-90"
+              style={{ backgroundColor: accent }}
+            >
+              Ask a Question
+            </a>
           </div>
         </div>
       </section>

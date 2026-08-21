@@ -216,6 +216,40 @@ export async function createRequest(
         "You've created a service request. The business will respond here when ready.",
     });
 
+    // Auto-create a booking when the request type is "booking" with a date and service
+    if (requestType === "booking" && requestedDate && businessServiceId) {
+      try {
+        const service3 = createServiceClient();
+
+        const { data: svc } = await service3
+          .from("business_services")
+          .select("duration_minutes")
+          .eq("id", businessServiceId)
+          .maybeSingle();
+
+        const duration = svc?.duration_minutes ?? 30;
+
+        // Use requested time or default to 09:00
+        const startTime = requestedTime || "09:00";
+        const [h, m] = startTime.split(":").map(Number);
+        const endMinutes = h * 60 + m + duration;
+        const endTime = `${String(Math.floor(endMinutes / 60)).padStart(2, "0")}:${String(endMinutes % 60).padStart(2, "0")}`;
+
+        await service3.from("bookings").insert({
+          business_id: conversation.business_id,
+          customer_id: user.id,
+          service_id: businessServiceId,
+          booking_date: requestedDate,
+          start_time: startTime,
+          end_time: endTime,
+          notes: notes ?? null,
+          status: "pending",
+        });
+      } catch {
+        // Booking creation is best-effort — the request still succeeds
+      }
+    }
+
     return { ok: true, requestId: created.id };
   } catch (error) {
     return {

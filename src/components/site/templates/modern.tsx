@@ -75,7 +75,7 @@ export default function ModernTemplate({
   return (
     <div
       style={{ "--primary": primary, "--accent": accent } as React.CSSProperties}
-      className="min-h-screen bg-white text-slate-800 antialiased"
+      className="min-h-screen bg-white text-slate-800 antialiased pb-20"
     >
       {/* ─── Hero Split ─── */}
       <section className="relative">
@@ -469,6 +469,41 @@ export default function ModernTemplate({
                 </div>
               )}
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── CTA Bar ─── */}
+      <section
+        className="sticky bottom-0 z-40 border-t px-8 py-4 md:px-16"
+        style={{ borderColor: "rgba(255,255,255,0.15)", backgroundColor: "var(--primary)" }}
+      >
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4">
+          <p className="text-sm font-medium text-white/80">Ready to get started?</p>
+          <div className="flex flex-wrap gap-3">
+            {b.phone && (
+              <a
+                href={`tel:${b.phone}`}
+                className="rounded-full border border-white/30 px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-white/10"
+              >
+                Call {b.phone}
+              </a>
+            )}
+            {b.email && (
+              <a
+                href={`mailto:${b.email}`}
+                className="rounded-full border border-white/30 px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-white/10"
+              >
+                Email
+              </a>
+            )}
+            <a
+              href={`/businesses/${b.slug}`}
+              className="rounded-full px-6 py-2 text-sm font-semibold text-slate-900 transition-colors hover:opacity-90"
+              style={{ backgroundColor: "var(--accent)" }}
+            >
+              Ask a Question
+            </a>
           </div>
         </div>
       </section>
