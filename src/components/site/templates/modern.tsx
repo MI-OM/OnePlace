@@ -169,10 +169,12 @@ export default function ModernTemplate({
               <div className="mt-1 text-sm text-white/60">Rating</div>
             </div>
             <div className="flex-1 rounded-2xl p-6 text-center" style={{ backgroundColor: "color-mix(in srgb, var(--accent) 15%, transparent)" }}>
-              <div className="text-3xl font-bold text-white">
-                {new Date().getFullYear() - 2020}+
-              </div>
-              <div className="mt-1 text-sm text-white/60">Years</div>
+              {b.foundedYear && (
+                <div className="text-3xl font-bold text-white">
+                  {new Date().getFullYear() - b.foundedYear}+
+                </div>
+                <div className="mt-1 text-sm text-white/60">Years</div>
+              )}
             </div>
           </div>
         </div>
@@ -213,10 +215,58 @@ export default function ModernTemplate({
             ))}
           </div>
         </section>
-      )}
-
-      {/* ─── Photo Gallery ─── */}
-      {photos && photos.length > 0 && (
+)}
+             
+            {/* ─── Products ─── */}
+            {b.products && b.products.length > 0 && (
+              <section className="px-8 py-20 md:px-16" style={{ backgroundColor: "color-mix(in srgb, var(--accent) 5%, white)" }}>
+                <div className="mx-auto max-w-7xl">
+                  <h2 className="text-sm font-semibold uppercase tracking-widest" style={{ color: "var(--accent)" }}>
+                    Our Products
+                  </h2>
+                  <div className="mt-3 text-3xl font-bold tracking-tight">What We Offer</div>
+                  <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    {b.products.map((p) => (
+                      <div
+                        key={p.id}
+                        className="group relative overflow-hidden rounded-xl border border-slate-100 bg-white p-6 shadow-sm transition-shadow hover:shadow-md"
+                        style={{ borderLeftWidth: "4px", borderLeftColor: "var(--accent)" }}
+                      >
+                        {p.imageUrl && (
+                          <img
+                            src={p.imageUrl}
+                            alt={p.name}
+                            className="h-32 w-full object-cover rounded-t-xl"
+                          />
+                        )}
+                        <div className="p-3">
+                          <h3 className="text-lg font-semibold text-slate-900">{p.name}</h3>
+                          {p.price != null && (
+                            <span className="shrink-0 rounded-full px-3 py-1 text-sm font-medium text-white" style={{ backgroundColor: "var(--primary)" }}>
+                              {formatPrice(p.price, p.priceType, p.minPrice, p.maxPrice, p.currency)}
+                            </span>
+                          )}
+                          {p.description && (
+                            <p className="mt-1 text-sm leading-relaxed text-slate-500">{p.description}</p>
+                          )}
+                          {p.url && (
+                            <a
+                              href={p.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="mt-2 inline-block text-primary underline underline-offset-2 hover:text-primary/90"
+                            >
+                              View product
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </section>
+            )}
+            {photos && photos.length > 0 && (
         <section
           className="px-8 py-20 md:px-16"
           style={{ backgroundColor: "color-mix(in srgb, var(--primary) 5%, white)" }}
@@ -425,7 +475,12 @@ export default function ModernTemplate({
       <footer className="border-t border-slate-200 bg-white">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-8 py-8 text-sm text-slate-400 md:flex-row md:px-16">
           <span className="font-medium text-slate-600">{b.name}</span>
-          <span>Powered by OnePlace</span>
+          <a
+            href="/"
+            className="underline underline-offset-2 text-primary hover:text-primary/90"
+          >
+            Powered by OnePlace
+          </a>
         </div>
       </footer>
     </div>

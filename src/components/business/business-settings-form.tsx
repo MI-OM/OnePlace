@@ -26,6 +26,7 @@ const TABS: { id: Tab; label: string }[] = [
   { id: "hours", label: "Hours" },
   { id: "services", label: "Services" },
   { id: "website", label: "Website" },
+  { id: "products", label: "Products" },
 ];
 
 const DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
@@ -44,6 +45,7 @@ type Props = {
     postalCode: string | null;
     logoUrl: string | null;
     coverImageUrl: string | null;
+    foundedYear: number | null;
     slug: string;
     websiteTemplate: string;
     websitePrimaryColor: string;
@@ -76,6 +78,7 @@ export function BusinessSettingsForm({
   const [city, setCity] = useState(business.city ?? "");
   const [province, setProvince] = useState(business.province ?? "");
   const [postalCode, setPostalCode] = useState(business.postalCode ?? "");
+  const [foundedYear, setFoundedYear] = useState<number | null>(business.foundedYear ?? null);
 
   // AI config state
   const [greeting, setGreeting] = useState(initialAI?.greeting ?? "");
@@ -112,6 +115,13 @@ export function BusinessSettingsForm({
   const [websiteTemplate, setWebsiteTemplate] = useState(business.websiteTemplate);
   const [websitePrimaryColor, setWebsitePrimaryColor] = useState(business.websitePrimaryColor);
   const [websiteAccentColor, setWebsiteAccentColor] = useState(business.websiteAccentColor);
+  const [productName, setProductName] = useState("");
+  const [productUrl, setProductUrl] = useState("");
+  const [productPrice, setProductPrice] = useState(0);
+  const [productPriceType, setProductPriceType] = useState<"fixed" | "starting_from" | "range" | "quote_required">("fixed");
+  const [productProductType, setProductProductType] = useState<"product" | "digital" | "gift_card" | "service_addon">("product");
+  const [productSortOrder, setProductSortOrder] = useState(0);
+  const [productIsActive, setProductIsActive] = useState(true);
 
   const handleSaveProfile = () => {
     startTransition(async () => {
@@ -204,6 +214,25 @@ export function BusinessSettingsForm({
     });
   };
 
+  const handleSaveProducts = () => {
+    startTransition(async () => {
+      const result = await updateBusinessProducts(businessId, {
+        productName,
+        productUrl,
+        productPrice,
+        productPriceType,
+        productProductType,
+        productSortOrder,
+        productIsActive,
+      });
+      if (result.error) {
+        toast.error(result.error);
+      } else {
+        toast.success("Products updated.");
+      }
+    });
+  };
+
   return (
     <div className="mt-8">
       <div className="flex gap-1 border-b border-border">
@@ -237,6 +266,7 @@ export function BusinessSettingsForm({
             <div className="grid grid-cols-3 gap-4">
               <Field label="City" value={city} onChange={setCity} />
               <Field label="Province" value={province} onChange={setProvince} />
+              <Field label="Founded year" value={foundedYear} onChange={setFoundedYear} />
               <Field label="Postal code" value={postalCode} onChange={setPostalCode} />
             </div>
             <Button onClick={handleSaveProfile} disabled={pending}>
@@ -492,8 +522,54 @@ export function BusinessSettingsForm({
 
               <QrCodeSection businessSlug={business.slug} />
             </div>
+</>
+        )}
+        
+        {tab === "products" && (
+          <>
+            <div className="space-y-6">
+              <p className="text-sm text-muted-foreground mb-4">Add products that will appear on your generated website.</p>
+              <div className="rounded-lg border border-border p-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <Field label="Product name" value={productName} onChange={setProductName} />
+                  <Field label="External URL" value={productUrl} onChange={setProductUrl} />
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <Field label="Price" value={String(productPrice ?? "")} onChange={(v) =>
+                    setProductPrice(v ? Number(v) : null)}
+                  />
+                  <Field label="Price type" 
+                    select 
+                      selectedValue={productPriceType} 
+                      onValueChange={(v) => setProductPriceType(v)}
+                  >
+                    <option value="fixed">Fixed</option>
+                    <option value="starting_from">Starting from</option>
+                    <option value="range">Range</option>
+                    <option value="quote_required">Quote required</option>
+                  </select>
+                </div>
+                <Field label="Product type" 
+                  select 
+                    selectedValue={productProductType} 
+                    onValueChange={(v) => setProductProductType(v)}
+                  >
+                    <option value="product">Product</option>
+                    <option value="digital">Digital</option>
+                    <option value="gift_card">Gift card</option>
+                    <option value="service_addon">Service addon</option>
+                  </select>
+                </Field>
+                <Field label="Sort order" value={String(productSortOrder)} onChange={setProductSortOrder} type="number" />
+                <Toggle label="Active" checked={productIsActive} onChange={setProductIsActive} />
+              </div>
+              <Button onClick={handleSaveProducts} disabled={pending}>
+                {pending ? "Saving..." : "Save products"}
+              </Button>
+            </div>
           </>
         )}
+      
       </div>
     </div>
   );

@@ -17,6 +17,7 @@ export function SignUpForm({ next }: { next?: string }) {
   const [confirmError, setConfirmError] = useState<string>();
   const [turnstileToken, setTurnstileToken] = useState("");
   const tokenRef = useRef("");
+  const [submittedEmail, setSubmittedEmail] = useState<string>();
 
   function handleToken(token: string) {
     tokenRef.current = token;
@@ -42,12 +43,57 @@ export function SignUpForm({ next }: { next?: string }) {
       turnstileToken: tokenRef.current,
     });
     if (result.error) return { error: result.error };
+    if (result.needsConfirmation) {
+      setSubmittedEmail(result.email);
+      return { error: undefined };
+    }
     router.push(result.redirectTo ?? "/");
     router.refresh();
     return { error: undefined };
   }
 
   const [state, formAction, pending] = useActionState(handleSubmit, undefined);
+
+  if (submittedEmail) {
+    return (
+      <div className="space-y-4 text-center">
+        <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
+          <svg
+            className="size-6 text-green-600 dark:text-green-400"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={2}
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"
+            />
+          </svg>
+        </div>
+        <h2 className="text-xl font-semibold tracking-tight">
+          Check your email
+        </h2>
+        <p className="text-sm text-muted-foreground">
+          We sent a verification link to{" "}
+          <span className="font-medium text-foreground">{submittedEmail}</span>.
+          Click the link in the email to confirm your account.
+        </p>
+        <p className="text-xs text-muted-foreground">
+          Didn&apos;t get it? Check your spam folder, or{" "}
+          <button
+            type="button"
+            onClick={() => setSubmittedEmail(undefined)}
+            className="font-medium text-foreground underline-offset-4 hover:underline"
+          >
+            try a different email
+          </button>
+          .
+        </p>
+      </div>
+    );
+  }
 
   return (
     <form action={formAction} className="space-y-4">

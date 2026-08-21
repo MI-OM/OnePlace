@@ -23,7 +23,7 @@ export default async function BusinessSettingsPage({
 
   const { data: business } = await service
     .from("businesses")
-    .select("id, name, slug, description, phone, email, website_url, address_line_1, city, province, postal_code, logo_url, cover_image_url, website_template, website_primary_color, website_accent_color")
+    .select("id, name, slug, description, founded_year, phone, email, website_url, address_line_1, city, province, postal_code, logo_url, cover_image_url, website_template, website_primary_color, website_accent_color")
     .eq("id", businessId)
     .maybeSingle();
 

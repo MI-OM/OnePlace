@@ -71,12 +71,29 @@ export type BusinessProfile = {
   country: string | null;
   timezone: string;
   verificationStatus: "unverified" | "pending" | "verified";
+  foundedYear: number | null;
   categories: BusinessCategory[];
   services: BusinessService[];
   hours: BusinessHoursRow[];
   reviews: BusinessReview[];
   rating: number | null;
   reviewCount: number;
+};
+
+export type BusinessProduct = {
+  id: string;
+  name: string;
+  description: string | null;
+  price: number | null;
+  priceType: "fixed" | "starting_from" | "range" | "quote_required";
+  minPrice: number | null;
+  maxPrice: number | null;
+  currency: string;
+  imageUrl: string | null;
+  url: string | null;
+  productType: "product" | "digital" | "gift_card" | "service_addon";
+  sortOrder: number;
+  isActive: boolean;
 };
 
 type BusinessRow = {

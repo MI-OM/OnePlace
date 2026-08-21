@@ -180,7 +180,41 @@ export default function MinimalTemplate({
         </section>
       )}
 
-      {/* Reviews */}
+            {/* ─── Products ─── */}
+            {b.products && b.products.length > 0 && (
+              <section className="mx-auto max-w-5xl px-6 pb-20">
+                <h2 className="mb-8 text-center font-serif text-2xl font-semibold tracking-tight">Our Products</h2>
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+                  {b.products.map((p) => (
+                    <div key={p.id} className="border rounded p-4">
+                      {p.imageUrl && (
+                        <img src={p.imageUrl} alt={p.name} className="h-32 w-full object-cover rounded-t" />
+                      )}
+                      <div className="p-3">
+                        <h3 className="font-semibold">{p.name}</h3>
+                        {p.price != null && (
+                          <p className="mt-2 font-medium">{formatPrice(p.price, p.priceType, p.minPrice, p.maxPrice, p.currency)}</p>
+                        )}
+                        {p.description && (
+                          <p className="mt-2 text-sm text-neutral-600">{p.description}</p>
+                        )}
+                        {p.url && (
+                          <a
+                            href={p.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="mt-2 block text-primary underline underline-offset-2 hover:text-primary/90"
+                          >
+                            View product
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+            {photos && photos.length > 0 && (
       {b.reviews.length > 0 && (
         <section className="mx-auto max-w-2xl px-6 pb-20">
           <h2 className="mb-8 text-center font-serif text-2xl font-semibold tracking-tight">Reviews</h2>
@@ -237,7 +271,7 @@ export default function MinimalTemplate({
 
       {/* Footer */}
       <footer className="border-t border-neutral-100 py-8 text-center text-xs text-neutral-400">
-        {b.name} &middot; Powered by OnePlace
+        {b.name} &middot; <a href="/" className="underline underline-offset-2 text-primary hover:text-primary/90">Powered by OnePlace</a>
       </footer>
     </div>
   );

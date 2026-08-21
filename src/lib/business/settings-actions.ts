@@ -15,6 +15,7 @@ const updateProfileSchema = z.object({
   city: z.string().optional(),
   province: z.string().optional(),
   postalCode: z.string().optional(),
+  foundedYear: z.number().int().min(1900).max(2100).nullable().optional(),
 });
 
 const updateAIConfigSchema = z.object({
@@ -92,6 +93,7 @@ export async function updateBusinessProfile(
         city: parsed.city || null,
         province: parsed.province || null,
         postal_code: parsed.postalCode || null,
+        founded_year: parsed.foundedYear ?? null,
         updated_at: new Date().toISOString(),
       })
       .eq("id", businessId);
@@ -311,6 +313,77 @@ export async function updateBusinessWebsite(
       .eq("id", businessId);
 
     if (error) return { ok: false, error: error.message };
+
+    revalidatePath(`/dashboard/${businessId}/settings`);
+    revalidatePath(`/site/${businessId}`);
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: String(e) };
+  }
+}
+
+const updateProductsSchema = z.object({
+  products: z.array(
+    z.object({
+      id: z.string().uuid().optional(),
+      name: z.string().min(1, "Product name required"),
+      description: z.string().optional(),
+      price: z.number().optional(),
+      priceType: z.enum(["fixed", "starting_from", "range", "quote_required"]).optional(),
+      minPrice: z.number().optional(),
+      maxPrice: z.number().optional(),
+      currency: z.string().default("CAD"),
+      imageUrl: z.string().optional(),
+      url: z.string().url().optional().refine(() => true, "Valid URL required when provided").optional(),
+      productType: z.enum(["product", "digital", "gift_card", "service_addon"]).default("product"),
+      sortOrder: z.number().int().default(0),
+      isActive: z.boolean().default(true),
+    })
+  ),
+  deletedIds: z.array(z.string().uuid()).default([]),
+});
+
+export async function updateBusinessProducts(
+  businessId: string,
+  data: z.infer<typeof updateProductsSchema>,
+): Promise<{ ok: boolean; error?: string }> {
+  try {
+    await requireBusinessMember(businessId);
+    const parsed = updateProductsSchema.parse(data);
+    const service = createServiceClient();
+
+    const { error } = await service
+      .from("business_products")
+      .delete()
+      .in("id", parsed.deletedIds);
+
+    if (error) return { ok: false, error: error.message };
+
+    if (parsed.products.length > 0) {
+      const { error: upsertError } = await service
+        .from("business_products")
+        .upsert(
+          parsed.products.map((p) => ({
+            id: p.id,
+            business_id: businessId,
+            name: p.name,
+            description: p.description,
+            price: p.price,
+            price_type: p.priceType,
+            min_price: p.minPrice,
+            max_price: p.maxPrice,
+            currency: p.currency,
+            image_url: p.imageUrl,
+            url: p.url,
+            product_type: p.productType,
+            sort_order: p.sortOrder,
+            is_active: p.isActive,
+          })),
+          onConflict: "id"
+        );
+
+      if (upsertError) return { ok: false, error: upsertError.message };
+    }
 
     revalidatePath(`/dashboard/${businessId}/settings`);
     revalidatePath(`/site/${businessId}`);

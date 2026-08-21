@@ -469,9 +469,14 @@ export default function ClassicTemplate({
           </p>
           <p className="mt-2 text-xs text-gray-400">
             Powered by{" "}
-            <span className="font-medium" style={{ color: primary }}>
+            <a
+              href="/"
+              className={primary}
+              style={{ color: primary }}
+              className="font-medium"
+            >
               OnePlace
-            </span>
+            </a>
           </p>
         </div>
       </footer>

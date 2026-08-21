@@ -2,6 +2,7 @@
 
 import { useCallback, useRef, useState } from "react";
 import { ImagePlus, Loader2, X } from "lucide-react";
+import { toast } from "sonner";
 
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -164,6 +165,10 @@ export function GalleryUpload({
 
         for (let i = 0; i < files.length; i++) {
           const file = files[i];
+          if (file.size > 5 * 1024 * 1024) {
+            toast.error(`${file.name} exceeds 5 MB limit`);
+            continue;
+          }
           const ext = file.name.split(".").pop() ?? "jpg";
           const filePath = `${basePath}/${businessId}/${Date.now()}-${i}.${ext}`;
 
@@ -182,8 +187,8 @@ export function GalleryUpload({
         }
 
         onChange(newPhotos);
-      } catch {
-        // errors handled silently for now
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Photo upload failed");
       } finally {
         setUploading(false);
       }

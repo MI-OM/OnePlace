@@ -26,6 +26,7 @@ type Row = {
   website_template: string;
   website_primary_color: string;
   website_accent_color: string;
+  founded_year: number | null;
   categories: {
     is_primary: boolean;
     category: {
@@ -98,6 +99,7 @@ function mapBusiness(row: Row): SiteBusiness {
     country: row.country,
     timezone: row.timezone,
     verificationStatus: row.verification_status as SiteBusiness["verificationStatus"],
+    foundedYear: row.founded_year ?? null,
     categories: row.categories.map((c) => ({
       id: c.category.id,
       name: c.category.name,
@@ -117,6 +119,20 @@ function mapBusiness(row: Row): SiteBusiness {
       maxPrice: s.max_price,
       currency: s.currency,
       durationMinutes: s.duration_minutes,
+    })),
+    products: row.products?.map((p) => ({
+      id: p.id,
+      name: p.name,
+      description: p.description,
+      price: p.price,
+      priceType: p.price_type as SiteBusiness["products"][number]["priceType"],
+      minPrice: p.min_price,
+      maxPrice: p.max_price,
+      currency: p.currency,
+      imageUrl: p.image_url,
+      url: p.url,
+      productType: p.product_type as SiteBusiness["products"][number]["productType"],
+      isActive: p.is_active,
     })),
     hours: row.hours.map((h) => ({
       dayOfWeek: h.day_of_week,
@@ -183,6 +199,7 @@ export default async function SitePage({
         address_line_1, city, province, postal_code, country, timezone,
         verification_status,
         website_template, website_primary_color, website_accent_color,
+        founded_year,
         categories:business_categories(
           is_primary,
           category:categories(id, name, slug, icon, description, parent_id)
@@ -190,6 +207,9 @@ export default async function SitePage({
         services:business_services(
           id, name, description, price, price_type, min_price, max_price,
           currency, duration_minutes
+        ),
+        products:business_products(
+          id, name, description, price, price_type, min_price, max_price, currency, image_url, url, product_type, is_active
         ),
         hours:business_hours(day_of_week, is_closed, opens_at, closes_at),
         reviews:reviews(

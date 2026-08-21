@@ -37,6 +37,7 @@ const onboardingSchema = z.object({
     .min(1, "Tell us what to call you.")
     .max(60, "Keep your name under 60 characters."),
   location: z.string().trim().max(120, "Keep your location under 120 characters.").optional(),
+  avatarUrl: z.string().url().nullable().optional(),
 });
 
 function toMessage(code: string | undefined): string | undefined {
@@ -164,7 +165,7 @@ export async function updatePassword(
 }
 
 export async function updateProfile(
-  input: { displayName: string; location?: string },
+  input: { displayName: string; location?: string; avatarUrl?: string | null },
 ): Promise<ActionResult> {
   const parsed = onboardingSchema.safeParse(input);
   if (!parsed.success) {
@@ -177,15 +178,24 @@ export async function updateProfile(
   } = await supabase.auth.getUser();
   if (!user) return { error: "Please sign in to continue." };
 
+  const updateData: Record<string, unknown> = {
+    display_name: parsed.data.displayName,
+    first_name: parsed.data.displayName,
+  };
+
+  if ("location" in parsed.data) {
+    updateData.location = parsed.data.location ?? null;
+  }
+
+  if ("avatarUrl" in parsed.data) {
+    updateData.avatar_url = parsed.data.avatarUrl ?? null;
+  }
+
   const { error } = await supabase
     .from("profiles")
-    .update({
-      display_name: parsed.data.displayName,
-      first_name: parsed.data.displayName,
-      ...(parsed.data.location ? { location: parsed.data.location } : {}),
-    })
+    .update(updateData)
     .eq("id", user.id);
 
   if (error) return { error: "We couldn't save your details. Please try again." };
-  return { success: true, redirectTo: "/" };
+  return { success: true, redirectTo: "/account" };
 }

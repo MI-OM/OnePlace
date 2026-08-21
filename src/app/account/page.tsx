@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { FileText, Heart, MessageCircle, Volume2 } from "lucide-react";
+import { ArrowLeft, FileText, Heart, MessageCircle, Volume2 } from "lucide-react";
 
 import { getProfile, getUser } from "@/lib/auth";
 import { getMyFavorites, getMyRequests } from "@/lib/customer";
@@ -17,6 +17,7 @@ import {
 import { SignOutButton } from "@/components/auth/sign-out-button";
 import { SavedBusinessesList } from "@/components/favorites/saved-businesses";
 import { SoundSettings } from "@/components/ui/sound-settings";
+import { AccountProfileForm } from "@/components/account/account-profile-form";
 
 export const metadata: Metadata = {
   title: "Your account — OnePlace",
@@ -51,6 +52,11 @@ export default async function AccountPage() {
 
   return (
     <main className="mx-auto w-full max-w-3xl px-6 py-12">
+      <Button render={<Link href="/" />} variant="ghost" size="sm" className="mb-6 -ml-2">
+        <ArrowLeft className="mr-1 size-4" aria-hidden />
+        Home
+      </Button>
+
       <h1 className="text-3xl font-semibold tracking-tight">Your account</h1>
       <p className="mt-2 text-muted-foreground">
         Manage your OnePlace details.
@@ -64,21 +70,11 @@ export default async function AccountPage() {
               How you appear across OnePlace.
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4 text-sm">
-            <div className="grid gap-1.5">
-              <span className="text-muted-foreground">Name</span>
-              <span className="font-medium">
-                {profile?.display_name ?? "—"}
-              </span>
-            </div>
-            <div className="grid gap-1.5">
-              <span className="text-muted-foreground">Email</span>
-              <span className="font-medium">{user.email ?? "—"}</span>
-            </div>
-            <div className="grid gap-1.5">
-              <span className="text-muted-foreground">Location</span>
-              <span className="font-medium">{profile?.location ?? "—"}</span>
-            </div>
+          <CardContent>
+            <AccountProfileForm
+              profile={profile}
+              userEmail={user.email ?? ""}
+            />
           </CardContent>
         </Card>
 
