@@ -104,6 +104,27 @@ export default async function Home() {
         </section>
       )}
 
+      {/* ── Top Rated Businesses ─────────────────────────────────────── */}
+      {topRated.length > 0 && (
+        <section className="px-6 py-16">
+          <div className="mx-auto w-full max-w-6xl">
+            <div>
+              <h2 className="text-2xl font-semibold tracking-tight">
+                Top rated businesses
+              </h2>
+              <p className="mt-1 text-muted-foreground">
+                Highest rated by customers in your area.
+              </p>
+            </div>
+            <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {topRated.map((business) => (
+                <BusinessCard key={business.id} business={business} />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* ── Sponsored Businesses ──────────────────────────────────────── */}
       {sponsored.length > 0 && (
         <section className="border-b border-amber-200 bg-amber-50/50 px-6 py-16 dark:border-amber-900 dark:bg-amber-950/20">
@@ -144,27 +165,6 @@ export default async function Home() {
             </div>
             <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {featured.map((business) => (
-                <BusinessCard key={business.id} business={business} />
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* ── Top Rated Businesses ─────────────────────────────────────── */}
-      {topRated.length > 0 && (
-        <section className="px-6 py-16">
-          <div className="mx-auto w-full max-w-6xl">
-            <div>
-              <h2 className="text-2xl font-semibold tracking-tight">
-                Top rated businesses
-              </h2>
-              <p className="mt-1 text-muted-foreground">
-                Highest rated by customers in your area.
-              </p>
-            </div>
-            <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {topRated.map((business) => (
                 <BusinessCard key={business.id} business={business} />
               ))}
             </div>

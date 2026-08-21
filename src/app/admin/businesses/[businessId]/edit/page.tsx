@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 
 import { getUser } from "@/lib/auth";
@@ -16,7 +16,7 @@ export default async function AdminEditBusinessPage({
   params: Promise<{ businessId: string }>;
 }) {
   const user = await getUser();
-  if (!user) notFound();
+  if (!user) redirect("/login?next=/admin");
 
   const { businessId } = await params;
   const service = createServiceClient();

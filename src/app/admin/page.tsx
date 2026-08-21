@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import {
+  ArrowLeft,
   Building2,
   ClipboardCheck,
   History,
@@ -37,6 +38,16 @@ export default async function AdminPage() {
 
   return (
     <main className="mx-auto min-h-screen max-w-4xl px-4 py-10">
+      <Button
+        render={<Link href="/admin/businesses" />}
+        variant="ghost"
+        size="sm"
+        className="mb-4 -ml-2"
+      >
+        <ArrowLeft className="mr-1 size-4" aria-hidden />
+        Back to businesses
+      </Button>
+
       <h1 className="text-2xl font-semibold tracking-tight">Admin Panel</h1>
 
       <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3">

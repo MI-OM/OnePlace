@@ -34,6 +34,28 @@ const inviteSchema = z.object({
   role: z.enum(["manager", "staff"]),
 });
 
+// Check if a profiles row exists for a user ID
+async function ensureProfilesRow(userId: string, supabase: any) {
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("id")
+    .eq("id", userId)
+    .maybeSingle();
+  if (!profile) {
+    // Create a minimal profiles row
+    const { error } = await supabase.from("profiles").insert({
+      id: userId,
+      email: null,
+      display_name: null,
+      first_name: null,
+      last_name: null,
+      avatar_url: null,
+      bio: null,
+    });
+    if (error) console.error("Failed to create profiles row:", error);
+  }
+}
+
 export async function inviteStaff(
   businessId: string,
   data: z.infer<typeof inviteSchema>,
@@ -43,7 +65,7 @@ export async function inviteStaff(
     const parsed = inviteSchema.parse(data);
     const service = createServiceClient();
 
-    // Find user by email
+    // Find user by email in Supabase Auth
     const { data: authUsers } = await service.auth.admin.listUsers();
     const targetUser = authUsers?.users?.find(
       (u) => u.email?.toLowerCase() === parsed.email.toLowerCase(),
@@ -76,6 +98,9 @@ export async function inviteStaff(
     });
 
     if (error) return { ok: false, error: error.message };
+
+    // Ensure the user has a profiles row so they appear in team member selector
+    await ensureProfilesRow(targetUser.id, service);
 
     revalidatePath(`/dashboard/${businessId}/team`);
     return { ok: true };
