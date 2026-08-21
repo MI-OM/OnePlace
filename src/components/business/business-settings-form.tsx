@@ -286,6 +286,7 @@ export function BusinessSettingsForm({
         resetProductForm();
         setDeletedProductIds([]);
         revalidateProducts();
+        router.refresh(); // Force page reload to show updated product list
       }
     });
   };

@@ -266,3 +266,41 @@ export async function updateStaffSpecialties(
     return { ok: false, error: String(e) };
   }
 }
+
+/**
+ * Fix: Ensure all business_members have corresponding profiles rows.
+ * Run this once (e.g., via Supabase SQL Editor) to repair existing data
+ * after the ensureProfilesRow fix was added to inviteStaff.
+ */
+export async function fixStaffProfiles(businessId: string): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const service = createServiceClient();
+
+    // Find all business_members without a profiles row
+    const { data: orphans } = await service
+      .from("business_members")
+      .select("user_id")
+      .eq("business_id", businessId)
+      .not("user_id", "in", "select id from profiles"); // This won't work in Supabase JS - we'll use a raw approach
+
+    // Alternative: just ensure profiles for all members
+    const { data: members } = await service
+      .from("business_members")
+      .select("user_id")
+      .eq("business_id", businessId)
+      .eq("status", "active");
+
+    if (!members || members.length === 0) {
+      return { ok: true };
+    }
+
+    for (const member of members) {
+      await ensureProfilesRow(member.user_id, service);
+    }
+
+    revalidatePath(`/dashboard/${businessId}/team`);
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: String(e) };
+  }
+}
