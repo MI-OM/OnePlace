@@ -1,0 +1,1490 @@
+{
+  "categories": [
+    ["Beauty & Hair", "beauty-hair", "scissors", "#d946ef", "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=800", null],
+    ["Health & Wellness", "health-wellness", "heart", "#22c55e", "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800", null],
+    ["Home & Living", "home-living", "home", "#3b82f6", "https://images.unsplash.com/photo-1484154218962-a197022b5858?w=800", null],
+    ["Hair Salon", "hair-salon", "scissors", "#ec4899", "https://images.unsplash.com/photo-1562322140-8baeececf3df?w=800", "beauty-hair"],
+    ["Barber Shop", "barber-shop", "scissors", "#8b5cf6", "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=800", "beauty-hair"],
+    ["Nail & Beauty", "nail-beauty", "sparkles", "#f472b6", "https://images.unsplash.com/photo-1604654894610-df63bc536371?w=800", "beauty-hair"],
+    ["Day Spa", "day-spa", "flower", "#a78bfa", "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=800", "beauty-hair"],
+    ["Massage Therapy", "massage", "hand", "#14b8a6", "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=800", "health-wellness"],
+    ["Fitness", "fitness", "dumbbell", "#f97316", "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800", "health-wellness"],
+    ["House Cleaning", "house-cleaning", "sparkles", "#06b6d4", "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800", "home-living"],
+    ["Home Repair", "home-repair", "wrench", "#eab308", "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800", "home-living"],
+    ["Restaurant & Bistro", "restaurant", "utensils", "#ef4444", "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800", null],
+    ["Bakery & Cakes", "bakery", "cake", "#f59e0b", "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=800", null],
+    ["Coffee Shop", "coffee-shop", "coffee", "#78350f", "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=800", null],
+    ["Bar & Grill", "bar-grill", "beer", "#b45309", "https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=800", null],
+    ["Commercial Cleaning", "commercial-cleaning", "sparkles", "#0891b2", "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800", null],
+    ["Plumbing", "plumbing", "droplet", "#2563eb", "https://images.unsplash.com/photo-1585704032915-c3400ca199e7?w=800", null],
+    ["Dance Studio", "dance-studio", "music", "#a855f7", "https://images.unsplash.com/photo-1508700929628-666bc8bd84ea?w=800", null],
+    ["Pet Services", "pet-services", "paw", "#16a34a", "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=800", null],
+    ["Photography", "photography", "camera", "#6366f1", "https://images.unsplash.com/photo-1542038784456-1ea8e935640e?w=800", null],
+    ["Furniture Store", "furniture-store", "armchair", "#78716c", "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800", null],
+    ["Accounting", "accounting", "calculator", "#1d4ed8", "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=800", null],
+    ["Toy Store", "toy-store", "gift", "#dc2626", "https://images.unsplash.com/photo-1558060370-d644479cb6f7?w=800", null],
+    ["Filipino Restaurant", "filipino-restaurant", "utensils", "#ea580c", "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800", null],
+    ["Convenience Store", "convenience-store", "store", "#65a30d", "https://images.unsplash.com/photo-1604719312566-8912e9227c6a?w=800", null],
+    ["Art & Entertainment", "art-entertainment", "palette", "#d946ef", "https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=800", null],
+    ["Non-Profit", "non-profit", "users", "#0ea5e9", "https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=800", null],
+    ["Flooring", "flooring", "layers", "#92400e", "https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=800", null],
+    ["House Painting", "house-painting", "paintbrush", "#ca8a04", "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=800", null],
+    ["Fast Food", "fast-food", "utensils", "#e11d48", "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800", null]
+  ],
+  "businesses": [
+    {
+      "name": "Baker Flooring",
+      "slug": "baker-flooring",
+      "description": "Family-owned flooring retailer serving Newfoundland and Labrador since 1970. Baker Flooring offers hardwood, laminate, vinyl, tile, and carpet from trusted brands, backed by professional installation. Three generations of experience help homeowners and contractors find the right floor for every budget.",
+      "address": "45 O'Leary Avenue, St. John's, NL A1B 2C6",
+      "phone": "(709) 747-5565",
+      "email": "info@bakerflooring.ca",
+      "website": "bakerflooring.ca",
+      "category_slug": "flooring",
+      "latitude": 47.5189,
+      "longitude": -52.7668,
+      "founded_year": 1970,
+      "tags": ["flooring", "hardwood", "carpet", "installation", "family-owned"],
+      "social_links": { "facebook": "bakerflooring" },
+      "ai_config": {
+        "greeting": "Hi there! Welcome to Baker Flooring, proudly serving Newfoundland since 1970. Are you looking to update the floors in your home or business?",
+        "personality": "Knowledgeable and trustworthy flooring expert who draws on decades of family experience. Patient with questions, honest about costs, and always recommends practical options that fit the customer's budget."
+      },
+      "ai_knowledge": [
+        ["Store History", "Baker Flooring has been family-owned and operated since 1970, serving three generations of Newfoundland customers from their St. John's location.", "about", 9],
+        ["Product Range", "Carries hardwood, engineered flooring, laminate, luxury vinyl plank, ceramic tile, and broadloom carpet from leading brands.", "products", 9],
+        ["Installation Services", "Professional installation available for all flooring types, including subfloor preparation, old floor removal, and finishing trim.", "services", 8],
+        ["Free Estimates", "Free in-home measurements and written estimates. Bring room dimensions in-store for a quick ballpark quote.", "policies", 7],
+        ["Warranty", "Manufacturer warranties range from 10 years to lifetime depending on product. Installation workmanship is guaranteed for two years.", "policies", 6]
+      ],
+      "services": [
+        ["Flooring Supply & Installation", "Supply and professional installation of hardwood, laminate, vinyl, tile, or carpet.", null, "quote_required", null, true],
+        ["In-Home Measurement & Estimate", "Free accurate measurement and no-obligation written quote at your location.", 0, "free", 45, true],
+        ["Laminate & Vinyl Room Install", "Flat-rate installation of laminate or luxury vinyl plank for rooms up to 200 square feet.", 899, "fixed", 480, true],
+        ["Carpet Installation", "Wall-to-wall broadloom carpet supply and installation for bedrooms and living areas.", null, "quote_required", null, true],
+        ["Subfloor Repair & Prep", "Leveling and repair of subfloors before new flooring goes down.", 85, "fixed", 120, false],
+        ["Commercial Flooring", "Durable flooring solutions for offices, retail spaces, and rental properties.", null, "quote_required", null, true]
+      ],
+      "products": [
+        ["Luxury Vinyl Plank (per sq ft)", "Waterproof LVP flooring in popular oak and hickory looks, in stock year-round.", "fixed", "https://bakerflooring.ca/vinyl", "retail"],
+        ["Engineered Hardwood", "Canadian-made engineered hardwood in oak, maple, and walnut finishes.", "quote_required", "https://bakerflooring.ca/hardwood", "retail"],
+        ["Area Rugs", "Machine-made and wool area rugs in standard and custom sizes.", "fixed", "https://bakerflooring.ca/rugs", "retail"]
+      ],
+      "photos": [
+        ["https://images.unsplash.com/photo-1581858726788-75bc0f6a952d?w=800", "Hardwood flooring being installed in a bright living room", true],
+        ["https://images.unsplash.com/photo-1513694203232-719a280e022f?w=800", "Cozy interior featuring new laminate flooring", false],
+        ["https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=800", "Modern home interior with fresh vinyl plank floors", false]
+      ],
+      "website_template": "classic",
+      "website_primary_color": "#92400e",
+      "website_accent_color": "#d97706",
+      "hours": {
+        "mon": ["08:00", "18:00", false],
+        "tue": ["08:00", "18:00", false],
+        "wed": ["08:00", "18:00", false],
+        "thu": ["08:00", "18:00", false],
+        "fri": ["08:00", "18:00", false],
+        "sat": [null, null, true],
+        "sun": [null, null, true]
+      }
+    },
+    {
+      "name": "Bibi Bistro",
+      "slug": "bibi-bistro",
+      "description": "Cozy downtown bistro on Duckworth Street serving elevated comfort food with a Mediterranean twist. Bibi Bistro is a favourite for lunch, date nights, and weekend brunch, with a curated wine list and local craft beer on tap. Warm atmosphere and friendly service in the heart of downtown St. John's.",
+      "address": "283 Duckworth Street, St. John's, NL A1C 1H3",
+      "phone": "(709) 576-5500",
+      "email": "hello@bibibistro.com",
+      "website": "bibibistro.com",
+      "category_slug": "restaurant",
+      "latitude": 47.5615,
+      "longitude": -52.7126,
+      "founded_year": null,
+      "tags": ["restaurant", "downtown", "wine", "date-night", "mediterranean"],
+      "social_links": { "instagram": "bibibistrodowntown", "facebook": "bibibistro" },
+      "ai_config": {
+        "greeting": "Welcome to Bibi Bistro! Would you like help with a reservation, our menu, or tonight's specials?",
+        "personality": "Warm and hospitable host with a passion for good food and wine. Enthusiastic about menu recommendations and happy to accommodate dietary needs."
+      },
+      "ai_knowledge": [
+        ["Location & Atmosphere", "Located at 283 Duckworth Street in downtown St. John's, offering an intimate dining room perfect for dates and small gatherings.", "about", 9],
+        ["Menu Highlights", "Known for hand-made pasta, fresh seafood, and shareable plates. Menu changes seasonally with local ingredients.", "menu", 10],
+        ["Reservations", "Reservations recommended for Friday and Saturday evenings. Walk-ins welcome at the bar.", "policies", 9],
+        ["Dietary Options", "Vegetarian, vegan, and gluten-free options available on every menu. Inform your server of allergies.", "menu", 8],
+        ["Drinks", "Curated wine list of 30-plus labels, local craft beer on tap, and signature cocktails.", "menu", 7]
+      ],
+      "services": [
+        ["Dinner Reservations", "Table reservations for dinner service Tuesday through Saturday.", 0, "free", 120, true],
+        ["Private Dining", "Semi-private space for groups of 8-14 with custom set menus, priced per person.", 55, "fixed", 180, true],
+        ["Weekend Lunch Service", "Walk-in and reserved lunch seating on weekends.", 0, "free", 75, true],
+        ["Off-Site Catering", "Bistro-inspired catering menus for private and corporate events.", null, "quote_required", null, true]
+      ],
+      "products": [
+        ["Gift Card", "Gift cards in any denomination, redeemable for lunch or dinner.", "fixed", "https://bibibistro.com/gift-cards", "gift_card"],
+        ["House Olive Oil", "Cold-pressed olive oil used in the kitchen, bottled in 500ml.", "fixed", "https://bibibistro.com/shop", "retail"]
+      ],
+      "photos": [
+        ["https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800", "Warm dining room at Bibi Bistro", true],
+        ["https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800", "Beautifully plated entree from the seasonal menu", false],
+        ["https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=800", "Glasses of red wine ready for dinner service", false]
+      ],
+      "website_template": "modern",
+      "website_primary_color": "#ef4444",
+      "website_accent_color": "#fbbf24",
+      "hours": {
+        "mon": [null, null, true],
+        "tue": ["11:00", "22:00", false],
+        "wed": ["11:00", "22:00", false],
+        "thu": ["11:00", "22:00", false],
+        "fri": ["11:00", "22:00", false],
+        "sat": ["11:00", "22:00", false],
+        "sun": [null, null, true]
+      }
+    },
+    {
+      "name": "BT Custom Cleaning",
+      "slug": "bt-custom-cleaning",
+      "description": "Locally owned commercial cleaning company keeping offices, retail spaces, and medical facilities spotless across the metro area. Founded in 2019, BT Custom Cleaning builds custom cleaning schedules around each client's hours and budget. Fully insured staff and eco-friendly product options available.",
+      "address": "42 Empire Avenue, St. John's, NL A1C 3H9",
+      "phone": "(709) 325-6634",
+      "email": "btcustomcleaning.nl@gmail.com",
+      "website": "btcustomcleaning2.godaddysites.com",
+      "category_slug": "commercial-cleaning",
+      "latitude": 47.5615,
+      "longitude": -52.7126,
+      "founded_year": 2019,
+      "tags": ["commercial-cleaning", "office-cleaning", "insured", "eco-friendly"],
+      "social_links": { "facebook": "btcustomcleaning" },
+      "ai_config": {
+        "greeting": "Hello! Thanks for your interest in BT Custom Cleaning. Are you looking for regular commercial cleaning or a one-time deep clean?",
+        "personality": "Professional and reliable operations-minded assistant. Focused on quotes, scheduling flexibility, and building trust with business clients."
+      },
+      "ai_knowledge": [
+        ["Company Background", "Founded in 2019, BT Custom Cleaning is locally owned and fully insured, specializing in commercial and post-construction cleaning.", "about", 9],
+        ["Service Areas", "Serving St. John's, Mount Pearl, Paradise, and Conception Bay South.", "service-area", 8],
+        ["Cleaning Programs", "Offers nightly office cleaning, daytime porter service, floor care, and washroom sanitation programs tailored to each site.", "services", 9],
+        ["Insurance & Screening", "All staff are background-checked, bonded, and covered by workplace insurance. Certificates of insurance available on request.", "policies", 8],
+        ["Green Options", "Eco-friendly cleaning products available for clients who request them at no extra cost.", "policies", 6]
+      ],
+      "services": [
+        ["Nightly Office Cleaning", "After-hours cleaning of offices including desks, washrooms, kitchens, and floors.", null, "quote_required", null, true],
+        ["Day Porter Service", "Daytime attendant to keep high-traffic facilities clean throughout business hours.", null, "quote_required", null, true],
+        ["Post-Construction Cleanup", "Detailed cleanup after renovations or new builds, ready for occupancy.", null, "quote_required", null, true],
+        ["Floor Care & Buffing", "Stripping, waxing, and buffing for hard floors.", 65, "fixed", 120, true],
+        ["One-Time Deep Clean", "Thorough top-to-bottom clean ideal before events or inspections.", 350, "fixed", 300, true]
+      ],
+      "products": [],
+      "photos": [
+        ["https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800", "Cleaner sanitizing an office workspace", true],
+        ["https://images.unsplash.com/photo-1563453392212-326f5e854473?w=800", "Cleaning supplies organized and ready for a shift", false]
+      ],
+      "website_template": "minimal",
+      "website_primary_color": "#0891b2",
+      "website_accent_color": "#22d3ee",
+      "hours": {
+        "mon": ["07:00", "19:00", false],
+        "tue": ["07:00", "19:00", false],
+        "wed": ["07:00", "19:00", false],
+        "thu": ["07:00", "19:00", false],
+        "fri": ["07:00", "19:00", false],
+        "sat": ["08:00", "14:00", false],
+        "sun": [null, null, true]
+      }
+    },
+    {
+      "name": "CakeyHand",
+      "slug": "cakey-hand",
+      "description": "Custom cake studio creating celebration cakes, cupcakes, and dessert tables for birthdays, weddings, and corporate events. Every CakeyHand creation is baked fresh to order with buttercream and fondant artwork. Order online or visit the shop for treats made daily.",
+      "address": "310 Torbay Road, St. John's, NL A1A 2E6",
+      "phone": "(709) 725-0411",
+      "email": "hello@cakeyhand.com",
+      "website": "cakeyhand.com",
+      "category_slug": "bakery",
+      "latitude": 47.5796,
+      "longitude": -52.7373,
+      "founded_year": 2019,
+      "tags": ["bakery", "custom-cakes", "wedding-cakes", "cupcakes"],
+      "social_links": { "instagram": "cakeyhand", "facebook": "cakeyhand" },
+      "ai_config": {
+        "greeting": "Hi sweet friend! Welcome to CakeyHand. Are you dreaming up a custom cake or looking for today's fresh treats?",
+        "personality": "Cheerful and creative baker who loves celebrations. Asks about themes, flavours, and dates, and guides customers through ordering a custom cake."
+      },
+      "ai_knowledge": [
+        ["Custom Cakes", "Every cake is made to order. Popular sizes serve 10-100 guests; submit orders at least 7 days ahead, 4 weeks for weddings.", "ordering", 10],
+        ["Flavours", "Signature flavours include vanilla bean, chocolate fudge, lemon raspberry, and red velvet, with fillings and buttercream to match.", "menu", 9],
+        ["Wedding Cakes", "Consultations and tastings available for wedding cakes. Delivery and setup included within the metro area.", "services", 9],
+        ["Allergens", "Kitchen handles nuts, gluten, dairy, and eggs. Nut-free decorating options available on request.", "policies", 7],
+        ["Pickup & Delivery", "Pickup at the Torbay Road shop daily; local delivery available for a fee.", "policies", 7]
+      ],
+      "services": [
+        ["Custom Celebration Cake", "Personalized cake with custom design, serves 10-20.", 85, "fixed", null, true],
+        ["Wedding Cake Consultation", "Tasting and design session for couples planning their wedding cake.", 40, "fixed", 60, true],
+        ["Cupcake Dozen", "One dozen gourmet cupcakes in mixed or single flavours.", 36, "fixed", null, false],
+        ["Dessert Table Setup", "Styled dessert table with cakes, cupcakes, and sweets for events.", null, "quote_required", null, true],
+        ["Cake Decorating Workshop", "Hands-on buttercream class for beginners, all supplies included.", 75, "fixed", 120, true]
+      ],
+      "products": [
+        ["Cookie Gift Box", "Box of six decorated sugar cookies, themed for holidays and occasions.", "fixed", "https://cakeyhand.com/shop", "retail"],
+        ["Digital Gift Card", "Redeemable online or in store for cakes and treats.", "fixed", "https://cakeyhand.com/gift-card", "gift_card"]
+      ],
+      "photos": [
+        ["https://images.unsplash.com/photo-1535141192574-5d4897c12636?w=800", "Custom decorated celebration cake", true],
+        ["https://images.unsplash.com/photo-1486427944299-d1955d23e34d?w=800", "Row of frosted cupcakes in the display case", false],
+        ["https://images.unsplash.com/photo-1509440159596-0249088772ff?w=800", "Fresh breads and pastries at the bakery counter", false]
+      ],
+      "website_template": "modern",
+      "website_primary_color": "#f59e0b",
+      "website_accent_color": "#fb7185",
+      "hours": {
+        "mon": ["08:00", "19:00", false],
+        "tue": ["08:00", "19:00", false],
+        "wed": ["08:00", "19:00", false],
+        "thu": ["08:00", "19:00", false],
+        "fri": ["08:00", "19:00", false],
+        "sat": ["09:00", "17:00", false],
+        "sun": ["10:00", "16:00", false]
+      }
+    },
+    {
+      "name": "Coffee Matters",
+      "slug": "coffee-matters",
+      "description": "Independent St. John's coffee roaster and cafe pouring quality espresso drinks since 2007. Coffee Matters roasts its own beans in small batches and serves breakfast, sandwiches, and fresh-baked goods. A friendly neighbourhood stop for your morning cup.",
+      "address": "11 Freshwater Road, St. John's, NL A1B 1B6",
+      "phone": "(709) 738-5535",
+      "email": "info@coffeematters.ca",
+      "website": "coffeematters.ca",
+      "category_slug": "coffee-shop",
+      "latitude": 47.5712,
+      "longitude": -52.7098,
+      "founded_year": 2007,
+      "tags": ["coffee", "roastery", "breakfast", "local-roast"],
+      "social_links": { "instagram": "coffeemattersnl", "facebook": "coffeemattersnl" },
+      "ai_config": {
+        "greeting": "Good morning! Welcome to Coffee Matters. Can I interest you in a freshly roasted coffee or something from the breakfast menu?",
+        "personality": "Friendly and upbeat barista who knows the regulars by name. Passionate about coffee origins and brewing, quick to suggest a drink to match your taste."
+      },
+      "ai_knowledge": [
+        ["Our Roast", "Beans are roasted in-house in small batches and sold fresh in 340g bags, whole bean or ground.", "products", 9],
+        ["Menu", "Full espresso bar, drip coffee, teas, smoothies, plus breakfast sandwiches, bagels, soups, and baked goods made daily.", "menu", 9],
+        ["History", "Coffee Matters opened in 2007 and has grown into a beloved local chain with several locations around St. John's.", "about", 8],
+        ["Loyalty Program", "Ask for a loyalty card and collect stamps toward free drinks.", "policies", 6],
+        ["Wholesale", "Wholesale beans and equipment support available for offices and restaurants.", "services", 7]
+      ],
+      "services": [
+        ["Dine-In Cafe Service", "Espresso drinks, breakfast, and lunch served in store daily.", 0, "free", 45, false],
+        ["Bean Subscription", "Monthly delivery of freshly roasted beans to your door.", 22, "fixed", null, true],
+        ["Office Coffee Supply", "Weekly coffee bean and supply delivery for workplaces.", null, "quote_required", null, true],
+        ["Catering Coffee Urns", "Coffee urns and pastry trays for meetings and events.", 60, "fixed", null, true]
+      ],
+      "products": [
+        ["House Blend Beans 340g", "Smooth medium roast with notes of chocolate and toasted nut.", "fixed", "https://coffeematters.ca/shop", "retail"],
+        ["Newfoundland Dark Roast 340g", "Bold dark roast blended for milk-based drinks.", "fixed", "https://coffeematters.ca/shop", "retail"],
+        ["Keep Cup", "Reusable travel mug with the Coffee Matters logo.", "fixed", "https://coffeematters.ca/shop", "merchandise"]
+      ],
+      "photos": [
+        ["https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=800", "Latte art on a fresh cappuccino", true],
+        ["https://images.unsplash.com/photo-1447933601403-0c6688de566e?w=800", "Barista pulling an espresso shot behind the bar", false],
+        ["https://images.unsplash.com/photo-1442512595331-e89e73853f31?w=800", "Freshly roasted coffee beans cooling", false]
+      ],
+      "website_template": "classic",
+      "website_primary_color": "#78350f",
+      "website_accent_color": "#b45309",
+      "hours": {
+        "mon": ["08:00", "17:00", false],
+        "tue": ["08:00", "17:00", false],
+        "wed": ["08:00", "17:00", false],
+        "thu": ["08:00", "17:00", false],
+        "fri": ["08:00", "17:00", false],
+        "sat": ["09:00", "17:00", false],
+        "sun": ["09:00", "17:00", false]
+      }
+    },
+    {
+      "name": "Connolly's Plumbing",
+      "slug": "connollys-plumbing",
+      "description": "Trusted local plumbing company handling repairs, renovations, and emergency call-outs across St. John's. From leaky taps to full bathroom rough-ins, licensed plumbers get the job done right. Upfront pricing and tidy workmanship on every job.",
+      "address": "120 Logy Bay Road, St. John's, NL A1A 2P8",
+      "phone": "(709) 576-6791",
+      "email": "service@connollysplumbing.ca",
+      "website": "connollysplumbing.ca",
+      "category_slug": "plumbing",
+      "latitude": 47.5796,
+      "longitude": -52.7373,
+      "founded_year": null,
+      "tags": ["plumbing", "repairs", "licensed", "emergency"],
+      "social_links": { "facebook": "connollysplumbing" },
+      "ai_config": {
+        "greeting": "Hi! Connolly's Plumbing here. Is this an emergency, or can we book you in for a repair or renovation quote?",
+        "personality": "Practical and reassuring tradesperson. Calm during emergencies, clear about pricing, and focused on getting a plumber booked fast."
+      },
+      "ai_knowledge": [
+        ["Emergency Service", "Emergency call-outs available for burst pipes and major leaks; call the main line and press 1 for emergencies.", "services", 10],
+        ["Licensing", "Fully licensed and insured plumbers registered in Newfoundland and Labrador.", "policies", 8],
+        ["Common Jobs", "Frequent jobs include faucet and toilet repairs, drain clearing, water heater replacement, and bathroom renovations.", "services", 8],
+        ["Service Area", "Serving St. John's and surrounding communities; travel fees may apply outside the metro area.", "service-area", 7],
+        ["Estimates", "Diagnostic fee applies to service calls and is credited toward the repair if you proceed.", "policies", 7]
+      ],
+      "services": [
+        ["Emergency Plumbing Call-Out", "Urgent response for leaks, bursts, and no-water situations.", 150, "fixed", 90, true],
+        ["Drain Cleaning", "Clearing clogged sinks, toilets, and main lines.", 180, "fixed", 90, true],
+        ["Fixture Installation", "Install faucets, toilets, sinks, and dishwashers.", 140, "fixed", 90, true],
+        ["Water Heater Replacement", "Removal and installation of residential hot water tanks.", null, "quote_required", 240, true],
+        ["Bathroom Renovation Rough-In", "Complete plumbing rough-in for bathroom remodels.", null, "quote_required", null, true]
+      ],
+      "products": [],
+      "photos": [
+        ["https://images.unsplash.com/photo-1585704032915-c3400ca199e7?w=800", "Plumber tightening pipes under a sink", true],
+        ["https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?w=800", "New bathroom fixtures installed by professionals", false]
+      ],
+      "website_template": "classic",
+      "website_primary_color": "#2563eb",
+      "website_accent_color": "#38bdf8",
+      "hours": {
+        "mon": ["08:00", "17:00", false],
+        "tue": ["08:00", "17:00", false],
+        "wed": ["08:00", "17:00", false],
+        "thu": ["08:00", "17:00", false],
+        "fri": ["08:00", "17:00", false],
+        "sat": ["09:00", "13:00", false],
+        "sun": [null, null, true]
+      }
+    },
+    {
+      "name": "Elusive Beauty",
+      "slug": "elusive-beauty",
+      "description": "Modern nail and beauty studio offering gel nails, nail art, lash extensions, and brow services. Elusive Beauty's talented team keeps up with the latest trends so you leave feeling polished. Relaxing chairs, spotless tools, and a welcoming vibe.",
+      "address": "150 Kenmount Road, St. John's, NL A1B 3V9",
+      "phone": "(709) 725-1822",
+      "email": "bookings@elusivebeauty.ca",
+      "website": "elusivebeauty.ca",
+      "category_slug": "nail-beauty",
+      "latitude": 47.5796,
+      "longitude": -52.7373,
+      "founded_year": 2023,
+      "tags": ["nails", "gel-nails", "lash-extensions", "beauty"],
+      "social_links": { "instagram": "elusivebeautybrand", "facebook": "elusivebeautybrand" },
+      "ai_config": {
+        "greeting": "Hey gorgeous! Welcome to Elusive Beauty. Are you thinking nails, lashes, or brows today?",
+        "personality": "Trendy and bubbly beauty bestie. Excited about nail art designs and current trends, and great at helping indecisive clients choose styles."
+      },
+      "ai_knowledge": [
+        ["Booking", "Appointments recommended and can be booked online or by phone; walk-ins taken when chairs are free.", "policies", 9],
+        ["Nail Services", "Gel manicures, acrylic extensions, structured gel, and intricate nail art by skilled technicians.", "services", 9],
+        ["Lash & Brow", "Classic and volume lash extensions, lash lifts, brow lamination, tinting, and waxing.", "services", 8],
+        ["Aftercare", "Book fills every 2-3 weeks to keep extensions fresh; oil-free remover protects natural nails.", "care", 6],
+        ["Studio Vibe", "Opened in 2023 with a bright, modern studio and hospital-grade sterilization standards.", "about", 7]
+      ],
+      "services": [
+        ["Gel Manicure", "Shape, cuticle care, and long-lasting gel polish.", 55, "fixed", 75, true],
+        ["Acrylic Full Set", "Full set of acrylic extensions with colour of choice.", 75, "fixed", 105, true],
+        ["Nail Art Add-On", "Custom hand-painted art, chrome, or French tips.", 15, "fixed", 30, true],
+        ["Volume Lash Extensions", "Full set of volume lash extensions.", 120, "fixed", 150, true],
+        ["Brow Lamination & Tint", "Fluffy laminated brows with tint and shape.", 70, "fixed", 60, true],
+        ["Fill (2-3 Weeks)", "Refill for gel or acrylic sets done at the studio.", 40, "fixed", 60, true]
+      ],
+      "products": [
+        ["Cuticle Oil", "Nourishing cuticle oil in scented blends to extend manicure life.", "fixed", "https://elusivebeauty.ca/shop", "retail"],
+        ["Gift Card", "Digital gift card redeemable for any studio service.", "fixed", "https://elusivebeauty.ca/gift-cards", "gift_card"]
+      ],
+      "photos": [
+        ["https://images.unsplash.com/photo-1604654894610-df63bc536371?w=800", "Fresh gel manicure with detailed nail art", true],
+        ["https://images.unsplash.com/photo-1519014816548-bf5fe059798b?w=800", "Lash extension application in progress", false],
+        ["https://images.unsplash.com/photo-1632345031435-8727f6897d53?w=800", "Bright and modern nail studio interior", false]
+      ],
+      "website_template": "modern",
+      "website_primary_color": "#f472b6",
+      "website_accent_color": "#c084fc",
+      "hours": {
+        "mon": ["09:00", "18:00", false],
+        "tue": ["09:00", "18:00", false],
+        "wed": ["09:00", "18:00", false],
+        "thu": ["09:00", "18:00", false],
+        "fri": ["09:00", "18:00", false],
+        "sat": ["10:00", "16:00", false],
+        "sun": [null, null, true]
+      }
+    },
+    {
+      "name": "Esthetician Jaz",
+      "slug": "esthetician-jaz",
+      "description": "Home-based day spa run by licensed esthetician Jasmin Abbott, offering facials, waxing, and relaxing skin treatments. Esthetician Jaz provides personalized skincare in a calm, private setting. Book online for glowing skin without the spa price tag.",
+      "address": "88 Blackmarsh Road, St. John's, NL A1E 1T3",
+      "phone": "(709) 691-2719",
+      "email": "estheticianjaz@gmail.com",
+      "website": "esthetician-jasmin-abbott.square.site",
+      "category_slug": "day-spa",
+      "latitude": 47.5189,
+      "longitude": -52.7668,
+      "founded_year": null,
+      "tags": ["facials", "skincare", "waxing", "esthetician"],
+      "social_links": { "instagram": "estheticianjaz", "facebook": "estheticianjaz" },
+      "ai_config": {
+        "greeting": "Hi lovely! Welcome to my little spa. Are you looking for a facial, waxing, or some much-needed relaxation?",
+        "personality": "Gentle and calming skincare specialist. Asks about skin concerns and sensitivities, and recommends treatments without any pressure."
+      },
+      "ai_knowledge": [
+        ["About Jaz", "Licensed esthetician Jasmin Abbott runs a private studio offering one-on-one skincare treatments.", "about", 9],
+        ["Facials", "Signature, deep-cleansing, and hydrating facials customized to your skin type using professional products.", "services", 9],
+        ["Hair Removal", "Full body waxing including brows, lip, underarms, legs, and Brazilian waxing.", "services", 8],
+        ["Booking", "Online booking through the Square site; first-time clients should arrive 10 minutes early for a skin consultation.", "policies", 8],
+        ["Aftercare", "Avoid exfoliating and direct sun for 24-48 hours after facials and waxing.", "care", 6]
+      ],
+      "services": [
+        ["Signature Facial", "Deep cleanse, exfoliation, mask, and massage tailored to your skin.", 75, "fixed", 60, true],
+        ["Express Facial", "Quick glow-up facial for busy schedules.", 50, "fixed", 30, true],
+        ["Brazilian Wax", "Full Brazilian hair removal by a licensed esthetician.", 55, "fixed", 30, true],
+        ["Eyebrow Wax & Tint", "Shaped brows with tint to define your look.", 35, "fixed", 30, true],
+        ["Back Facial", "Cleansing and exfoliating treatment for hard-to-reach skin.", 85, "fixed", 60, true]
+      ],
+      "products": [],
+      "photos": [
+        ["https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=800", "Relaxing spa treatment room", true],
+        ["https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=800", "Client enjoying a soothing facial treatment", false],
+        ["https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=800", "Skincare products arranged for a facial", false]
+      ],
+      "website_template": "minimal",
+      "website_primary_color": "#a78bfa",
+      "website_accent_color": "#f0abfc",
+      "hours": {
+        "mon": ["09:00", "18:00", false],
+        "tue": ["09:00", "18:00", false],
+        "wed": ["09:00", "18:00", false],
+        "thu": ["09:00", "18:00", false],
+        "fri": ["09:00", "18:00", false],
+        "sat": ["10:00", "16:00", false],
+        "sun": [null, null, true]
+      }
+    },
+    {
+      "name": "Fusion Dance Studio",
+      "slug": "fusion-dance-studio",
+      "description": "Vibrant dance school teaching hip hop, contemporary, ballet, and jazz to dancers of all ages. Fusion Dance Studio focuses on confidence, technique, and fun, with recitals every spring. Drop-in classes and full-season programs available.",
+      "address": "215 Hamilton Avenue, St. John's, NL A1E 1J6",
+      "phone": "(709) 725-0422",
+      "email": "info@fusiondance.ca",
+      "website": "fusiondance.ca",
+      "category_slug": "dance-studio",
+      "latitude": 47.5615,
+      "longitude": -52.7126,
+      "founded_year": null,
+      "tags": ["dance", "hip-hop", "kids-classes", "recitals"],
+      "social_links": { "facebook": "fusiondancestudio" },
+      "ai_config": {
+        "greeting": "Hey dancer! Welcome to Fusion Dance Studio. Want to know about class schedules, registration, or trying your first class?",
+        "personality": "High-energy and encouraging dance coach. Loves matching students to the right style and level, and celebrates every milestone."
+      },
+      "ai_knowledge": [
+        ["Class Styles", "Hip hop, contemporary, jazz, ballet, tap, and acro for ages 3 to adult.", "programs", 9],
+        ["Registration", "Fall registration opens in August; mid-season enrollment welcome if classes have space.", "policies", 9],
+        ["Recital", "Annual spring recital gives every dancer stage time in full costume.", "events", 8],
+        ["Trial Classes", "First trial class is free so students can find their fit before registering.", "policies", 8],
+        ["Attire", "Comfortable athletic wear and clean indoor sneakers for hip hop; leotards and tights for ballet.", "policies", 6]
+      ],
+      "services": [
+        ["Kids Hip Hop (Ages 6-10)", "Fun, high-energy hip hop fundamentals for young dancers.", 65, "fixed", 60, true],
+        ["Teen Contemporary", "Technique and choreography for teen dancers.", 75, "fixed", 75, true],
+        ["Adult Drop-In Class", "Casual drop-in classes, no experience needed.", 18, "fixed", 60, false],
+        ["Private Lessons", "One-on-one coaching for auditions or skill building.", 55, "fixed", 60, true],
+        ["Birthday Party Package", "Choreographed dance party with instructor for up to 15 kids.", 250, "fixed", 120, true]
+      ],
+      "products": [
+        ["Studio Hoodie", "Fusion Dance Studio branded hoodie in youth and adult sizes.", "fixed", "https://fusiondance.ca/shop", "merchandise"],
+        ["Recital Video", "Professionally filmed recording of the annual recital.", "fixed", "https://fusiondance.ca/recital", "digital"]
+      ],
+      "photos": [
+        ["https://images.unsplash.com/photo-1508700929628-666bc8bd84ea?w=800", "Dancers rehearsing choreography in the studio", true],
+        ["https://images.unsplash.com/photo-1518834107812-67b0b7c58434?w=800", "Young dancers practising in front of mirrors", false],
+        ["https://images.unsplash.com/photo-1524594152303-9fd13543fe6e?w=800", "Contemporary dance performance on stage", false]
+      ],
+      "website_template": "modern",
+      "website_primary_color": "#a855f7",
+      "website_accent_color": "#22d3ee",
+      "hours": {
+        "mon": ["16:00", "21:00", false],
+        "tue": ["16:00", "21:00", false],
+        "wed": ["16:00", "21:00", false],
+        "thu": ["16:00", "21:00", false],
+        "fri": ["16:00", "21:00", false],
+        "sat": ["09:00", "16:00", false],
+        "sun": ["10:00", "15:00", false]
+      }
+    },
+    {
+      "name": "Hair Connection",
+      "slug": "hair-connection",
+      "description": "Full-service salon in the east end offering cuts, colour, highlights, and styling for the whole family. The stylists at Hair Connection stay current on trends while mastering the classics. Open late six days a week to fit your schedule.",
+      "address": "340 Torbay Road, St. John's, NL A1A 2E9",
+      "phone": "(709) 364-5545",
+      "email": "salon@hairconnectionsamshara.ca",
+      "website": "hairconnectionsamshara.ca",
+      "category_slug": "hair-salon",
+      "latitude": 47.5796,
+      "longitude": -52.7373,
+      "founded_year": null,
+      "tags": ["haircut", "colour", "highlights", "family-salon"],
+      "social_links": {},
+      "ai_config": {
+        "greeting": "Hi! Welcome to Hair Connection. Would you like to book a cut, colour, or chat with a stylist about a new look?",
+        "personality": "Friendly neighbourhood salon coordinator. Great at matching clients with the right stylist and explaining what each service involves."
+      },
+      "ai_knowledge": [
+        ["Salon Services", "Precision cuts, balayage, foils, keratin smoothing, perms, and updos for weddings and proms.", "services", 9],
+        ["Stylist Team", "Experienced stylists with individual specialties; requests for a specific stylist are welcome.", "about", 8],
+        ["Hours", "Open until 9 pm Monday through Saturday, one of the latest-closing salons in town.", "policies", 8],
+        ["Colour Policy", "First-time colour clients may need a strand test booked 48 hours ahead.", "policies", 7],
+        ["Products", "Retail shelf stocked with salon-quality shampoo, conditioner, and styling products.", "products", 6]
+      ],
+      "services": [
+        ["Women's Cut & Style", "Consultation, shampoo, precision cut, and blow-dry finish.", 55, "fixed", 60, true],
+        ["Men's Cut", "Clipper or scissor cut with hot towel finish.", 32, "fixed", 45, true],
+        ["Full Foil Highlights", "Full head of foils with toner and blowout.", 140, "fixed", 180, true],
+        ["Balayage", "Hand-painted dimensional colour with gloss.", 165, "fixed", 210, true],
+        ["Keratin Smoothing Treatment", "Frizz-reducing smoothing treatment lasting up to three months.", 200, "fixed", 150, true],
+        ["Formal Updo", "Elegant styling for weddings, prom, and events.", 75, "fixed", 75, true]
+      ],
+      "products": [
+        ["Salon Shampoo", "Professional sulphate-free shampoo recommended by our stylists.", "fixed", "https://hairconnectionsamshara.ca/products", "retail"]
+      ],
+      "photos": [
+        ["https://images.unsplash.com/photo-1562322140-8baeececf3df?w=800", "Stylist cutting a client's hair in the salon", true],
+        ["https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?w=800", "Fresh balayage colour result", false],
+        ["https://images.unsplash.com/photo-1560066984-138dadb4c035?w=800", "Salon styling stations with mirrors", false]
+      ],
+      "website_template": "classic",
+      "website_primary_color": "#ec4899",
+      "website_accent_color": "#8b5cf6",
+      "hours": {
+        "mon": ["09:00", "21:00", false],
+        "tue": ["09:00", "21:00", false],
+        "wed": ["09:00", "21:00", false],
+        "thu": ["09:00", "21:00", false],
+        "fri": ["09:00", "21:00", false],
+        "sat": ["09:00", "21:00", false],
+        "sun": ["10:00", "17:00", false]
+      }
+    },
+    {
+      "name": "Hair E Styles",
+      "slug": "hair-e-styles",
+      "description": "Independent hair studio delivering personalized cuts and colour in a relaxed one-on-one setting. Hair E Styles keeps scheduling simple: book directly with your stylist and enjoy undivided attention. Great value and consistent results keep clients coming back.",
+      "address": "75 Merrymeeting Road, St. John's, NL A1C 2S6",
+      "phone": "(709) 726-6355",
+      "email": "hairestylesnl@gmail.com",
+      "website": null,
+      "category_slug": "hair-salon",
+      "latitude": 47.5615,
+      "longitude": -52.7126,
+      "founded_year": null,
+      "tags": ["hairstylist", "colour", "one-on-one", "independent"],
+      "social_links": {},
+      "ai_config": {
+        "greeting": "Hi there! Thanks for reaching out to Hair E Styles. Looking to book a cut or colour appointment?",
+        "personality": "Down-to-earth and personable stylist. Keeps things simple and friendly, focusing on availability and what the client wants."
+      },
+      "ai_knowledge": [
+        ["Booking Directly", "Appointments are booked directly with the stylist by phone or text; evenings fill up fast.", "policies", 9],
+        ["Services", "Cuts, all-over colour, foils, blowouts, and special occasion styling.", "services", 8],
+        ["Studio Setting", "Private studio chair means one-on-one attention and flexible timing.", "about", 7],
+        ["Payment", "Cash, debit, and e-transfer accepted.", "policies", 6]
+      ],
+      "services": [
+        ["Cut & Blow-Dry", "Personalized cut finished with a smooth blow-dry.", 45, "fixed", 60, true],
+        ["Root Touch-Up", "All-over root colour to refresh your look.", 70, "fixed", 90, true],
+        ["Partial Foils", "Half head of foils for brightness around the face.", 95, "fixed", 120, true],
+        ["Blowout", "Wash and styled blow-dry for events or a treat.", 35, "fixed", 45, true]
+      ],
+      "products": [],
+      "photos": [
+        ["https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?w=800", "Stylist blow-drying a client's fresh colour", true],
+        ["https://images.unsplash.com/photo-1595476108010-b4d1f102b1b1?w=800", "Haircut scissors and tools on a styling station", false]
+      ],
+      "website_template": "minimal",
+      "website_primary_color": "#ec4899",
+      "website_accent_color": "#f59e0b",
+      "hours": {
+        "mon": ["09:00", "19:00", false],
+        "tue": ["09:00", "19:00", false],
+        "wed": ["09:00", "19:00", false],
+        "thu": ["09:00", "19:00", false],
+        "fri": ["09:00", "19:00", false],
+        "sat": ["10:00", "17:00", false],
+        "sun": [null, null, true]
+      }
+    },
+    {
+      "name": "Honey & Co",
+      "slug": "honey-and-co",
+      "description": "Chic downtown studio for nails, brows, and beauty maintenance with a luxurious touch. Honey & Co pairs meticulous technique with a serene, Instagram-worthy space. Leave polished, pampered, and glowing.",
+      "address": "190 Water Street, St. John's, NL A1C 1B9",
+      "phone": "(709) 725-0525",
+      "email": "hello@honeyandco.ca",
+      "website": "honeyandco.ca",
+      "category_slug": "nail-beauty",
+      "latitude": 47.5615,
+      "longitude": -52.7126,
+      "founded_year": null,
+      "tags": ["nails", "brows", "luxury-beauty", "downtown"],
+      "social_links": { "instagram": "honeyandco_stj" },
+      "ai_config": {
+        "greeting": "Hello beautiful! Welcome to Honey & Co. Shall we get you booked for nails, brows, or a little self-care?",
+        "personality": "Polished and gracious beauty concierge. Attentive to detail, remembers preferences, and suggests add-ons that genuinely suit the client."
+      },
+      "ai_knowledge": [
+        ["The Studio", "Boutique beauty studio on Water Street known for meticulous nail work and a calm, luxe atmosphere.", "about", 8],
+        ["Nail Menu", "Manicures, pedicures, gel, builder gel, and premium nail art in a fully sanitized environment.", "services", 9],
+        ["Brow & Lash", "Brow shaping, lamination, tinting, and lash lift services.", "services", 8],
+        ["Memberships", "Monthly membership includes a manicure plus discounts on other services.", "policies", 7],
+        ["Groups", "Private group bookings available for bridal parties and celebrations.", "services", 7]
+      ],
+      "services": [
+        ["Luxury Gel Manicure", "Cuticle care, shaping, and chip-resistant gel colour.", 65, "fixed", 75, true],
+        ["Spa Pedicure", "Soak, scrub, massage, and polish in the massage chair.", 75, "fixed", 60, true],
+        ["Builder Gel Overlay", "Strength-building overlay for natural nails.", 85, "fixed", 90, true],
+        ["Brow Lamination", "Fluffy, fuller-looking laminated brows.", 75, "fixed", 60, true],
+        ["Bridal Party Package", "Group nail and brow services for wedding parties.", null, "quote_required", null, true]
+      ],
+      "products": [
+        ["Hand Cream", "Rich hand cream from the studio's retail shelf.", "fixed", "https://honeyandco.ca/shop", "retail"],
+        ["Gift Card", "Physical gift card beautifully packaged for gifting.", "fixed", "https://honeyandco.ca/gift-cards", "gift_card"]
+      ],
+      "photos": [
+        ["https://images.unsplash.com/photo-1610992015732-2449b76344bc?w=800", "Elegant manicure in a boutique studio", true],
+        ["https://images.unsplash.com/photo-1604654894610-df63bc536371?w=800", "Perfectly shaped nails with soft pink polish", false],
+        ["https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=800", "Beauty treatment in a serene studio setting", false]
+      ],
+      "website_template": "modern",
+      "website_primary_color": "#f472b6",
+      "website_accent_color": "#fbbf24",
+      "hours": {
+        "mon": ["09:00", "19:00", false],
+        "tue": ["09:00", "19:00", false],
+        "wed": ["09:00", "19:00", false],
+        "thu": ["09:00", "19:00", false],
+        "fri": ["09:00", "19:00", false],
+        "sat": ["10:00", "17:00", false],
+        "sun": ["12:00", "17:00", false]
+      }
+    },
+    {
+      "name": "Houston Country Bar & Grill",
+      "slug": "houston-country-bar-and-grill",
+      "description": "Country-themed bar and grill serving hearty plates, ice-cold beer, and live entertainment. Houston Country Bar & Grill turns weeknights into parties with line dancing, karaoke, and late-night eats. The go-to spot for country music fans in St. John's.",
+      "address": "460 Topsail Road, St. John's, NL A1E 2C1",
+      "phone": "(709) 576-5505",
+      "email": "houstoncountrybar@gmail.com",
+      "website": null,
+      "category_slug": "bar-grill",
+      "latitude": 47.5615,
+      "longitude": -52.7126,
+      "founded_year": null,
+      "tags": ["bar", "live-music", "country", "late-night", "karaoke"],
+      "social_links": {},
+      "ai_config": {
+        "greeting": "Howdy! Welcome to Houston Country Bar & Grill. Want to know about tonight's entertainment, our menu, or booking a table?",
+        "personality": "Fun-loving and energetic honky-tonk host. Hypes up upcoming events and helps plan nights out and group bookings."
+      },
+      "ai_knowledge": [
+        ["Entertainment", "Live bands Fridays and Saturdays, karaoke Wednesdays, and line dancing nights monthly.", "events", 9],
+        ["Kitchen Hours", "Kitchen serves until midnight; bar stays open later on weekends.", "menu", 8],
+        ["Late Nights", "Open until 2 am weeknights and 3 am Fridays and Saturdays.", "policies", 8],
+        ["Group Bookings", "Booth reservations and bottle service available for groups and parties.", "services", 7],
+        ["ID Policy", "Valid government ID required; 19-plus venue after 9 pm.", "policies", 7]
+      ],
+      "services": [
+        ["Table Reservation", "Reserved booth or table for dinner and a show.", 0, "free", 150, true],
+        ["Party Group Booking", "Reserved area for birthdays, stagettes, and work parties.", null, "quote_required", null, true],
+        ["Live Music Cover", "Cover charge on select live band nights.", 10, "fixed", null, false]
+      ],
+      "products": [
+        ["Houston T-Shirt", "Bar logo tee in black, a favourite souvenir.", "fixed", null, "merchandise"]
+      ],
+      "photos": [
+        ["https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=800", "Warm bar interior with pendant lighting", true],
+        ["https://images.unsplash.com/photo-1470337458703-46ad1756a187?w=800", "Ice-cold beers lined up on the bar top", false],
+        ["https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=800", "Live band playing to a packed crowd", false]
+      ],
+      "website_template": "modern",
+      "website_primary_color": "#b45309",
+      "website_accent_color": "#f59e0b",
+      "hours": {
+        "mon": ["16:00", "02:00", false],
+        "tue": ["16:00", "02:00", false],
+        "wed": ["16:00", "02:00", false],
+        "thu": ["16:00", "02:00", false],
+        "fri": ["15:00", "03:00", false],
+        "sat": ["15:00", "03:00", false],
+        "sun": ["16:00", "02:00", false]
+      }
+    },
+    {
+      "name": "Island Furniture",
+      "slug": "island-furniture",
+      "description": "Quality furniture showroom furnishing Newfoundland homes for decades. Island Furniture carries solid wood bedroom sets, living room suites, and custom-order pieces built to last. Knowledgeable staff help you furnish room by room without pressure.",
+      "address": "50 Kelsey Drive, St. John's, NL A1B 0B2",
+      "phone": "(709) 754-3899",
+      "email": "info@islandfurniture.ca",
+      "website": "islandfurniture.ca",
+      "category_slug": "furniture-store",
+      "latitude": 47.5549,
+      "longitude": -52.738,
+      "founded_year": null,
+      "tags": ["furniture", "home-decor", "solid-wood", "showroom"],
+      "social_links": { "facebook": "islandfurniture" },
+      "ai_config": {
+        "greeting": "Welcome to Island Furniture! Are you furnishing a particular room, or just browsing for ideas?",
+        "personality": "Helpful and patient furniture consultant. Asks about room dimensions and style preferences, and explains materials and delivery options clearly."
+      },
+      "ai_knowledge": [
+        ["Showroom", "Large showroom at Kelsey Drive displaying living room, dining, bedroom, and home office collections.", "about", 8],
+        ["Custom Orders", "Many pieces available in custom fabrics and finishes; special orders typically arrive in 6-10 weeks.", "services", 8],
+        ["Delivery", "White-glove delivery across the metro area and province-wide shipping available.", "policies", 8],
+        ["Financing", "Financing options available on larger purchases upon approval.", "policies", 6],
+        ["Local Craftsmanship", "Selection includes pieces crafted by local and Canadian artisans.", "products", 7]
+      ],
+      "services": [
+        ["In-Home Design Consultation", "Advice on layout, sizing, and piece selection in your home.", 0, "free", 60, true],
+        ["Delivery & Setup", "White-glove delivery with assembly and packaging removal.", 75, "fixed", null, false],
+        ["Custom Upholstery Orders", "Choose fabric and finish for sofas and accent chairs.", null, "quote_required", null, true]
+      ],
+      "products": [
+        ["Solid Wood Dining Sets", "Extendable dining tables with matching chairs in oak and maple.", "quote_required", "https://islandfurniture.ca/dining", "retail"],
+        ["Sectional Sofas", "Configurable sectionals in performance fabrics and leather.", "quote_required", "https://islandfurniture.ca/living-room", "retail"],
+        ["Mattresses", "Pocket-coil and hybrid mattresses in all standard sizes.", "quote_required", "https://islandfurniture.ca/mattresses", "retail"]
+      ],
+      "photos": [
+        ["https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800", "Stylish sofa set displayed in the showroom", true],
+        ["https://images.unsplash.com/photo-1538688525198-9b88f6f53126?w=800", "Modern living room furniture arrangement", false],
+        ["https://images.unsplash.com/photo-1533090481720-856c6e3c1fdc?w=800", "Solid wood dining table with chairs", false]
+      ],
+      "website_template": "classic",
+      "website_primary_color": "#78716c",
+      "website_accent_color": "#b45309",
+      "hours": {
+        "mon": ["10:00", "18:00", false],
+        "tue": ["10:00", "18:00", false],
+        "wed": ["10:00", "18:00", false],
+        "thu": ["10:00", "21:00", false],
+        "fri": ["10:00", "21:00", false],
+        "sat": ["10:00", "18:00", false],
+        "sun": ["12:00", "17:00", false]
+      }
+    },
+    {
+      "name": "Jamieson Kitchen Refinishing",
+      "slug": "jamieson-kitchen-refinishing",
+      "description": "Specialist in cabinet refinishing and resurfacing that transforms tired kitchens at a fraction of replacement cost. Jamieson Kitchen Refinishing sprays cabinets, vanities, and trim with durable factory-quality finishes. Most kitchens are completed in three to five days.",
+      "address": "36 Austin Street, St. John's, NL A1B 1R9",
+      "phone": "(709) 325-6312",
+      "email": "quotes@jamiesonkitchenrefinishing.com",
+      "website": "jamiesonkitchenrefinishing.com",
+      "category_slug": "house-painting",
+      "latitude": 47.5615,
+      "longitude": -52.7126,
+      "founded_year": null,
+      "tags": ["kitchen-refinishing", "cabinets", "resurfacing", "renovation"],
+      "social_links": {},
+      "ai_config": {
+        "greeting": "Hi! Thinking about refreshing your kitchen? I can tell you how cabinet refinishing works and set up a free quote.",
+        "personality": "Detail-oriented craftsman who educates customers on the refinishing process. Honest about what refinishing can achieve versus replacing."
+      },
+      "ai_knowledge": [
+        ["The Process", "Doors and drawers are removed, sprayed off-site, and reinstalled; frames are hand-masked and sprayed in place.", "process", 9],
+        ["Cost Savings", "Refinishing typically costs 60-75 percent less than replacing cabinets.", "pricing", 8],
+        ["Timeline", "Most kitchens take 3-5 days from prep to final cure; light kitchen use possible during the process.", "process", 8],
+        ["Finish Options", "Dozens of colours plus glazing and grain effects; low-VOC coatings available.", "products", 7],
+        ["Warranty", "Workmanship warranty covers peeling and adhesion issues.", "policies", 7]
+      ],
+      "services": [
+        ["Cabinet Refinishing", "Professional spray finish for kitchen cabinets and vanities.", null, "quote_required", null, true],
+        ["Countertop Resurfacing", "Renew laminate counters with a durable refinished surface.", null, "quote_required", null, true],
+        ["Free In-Home Quote", "On-site assessment with samples and written estimate.", 0, "free", 45, true],
+        ["Hardware Replacement", "New hinges and pulls installed during refinishing.", 12, "fixed", null, false]
+      ],
+      "products": [],
+      "photos": [
+        ["https://images.unsplash.com/photo-1556911220-bff31c812dba?w=800", "Refreshed kitchen with newly finished cabinets", true],
+        ["https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=800", "Painter spraying a smooth finish on cabinetry", false]
+      ],
+      "website_template": "minimal",
+      "website_primary_color": "#ca8a04",
+      "website_accent_color": "#0ea5e9",
+      "hours": {
+        "mon": ["08:00", "17:00", false],
+        "tue": ["08:00", "17:00", false],
+        "wed": ["08:00", "17:00", false],
+        "thu": ["08:00", "17:00", false],
+        "fri": ["08:00", "17:00", false],
+        "sat": ["09:00", "14:00", false],
+        "sun": [null, null, true]
+      }
+    },
+    {
+      "name": "Joyet Consulting",
+      "slug": "joyet-consulting",
+      "description": "Boutique accounting practice providing bookkeeping, tax preparation, and advisory services for small businesses and individuals. Joyet Consulting takes the stress out of tax season with clear advice and responsive service. Remote and in-person appointments available.",
+      "address": "220 Water Street, Suite 400, St. John's, NL A1C 1B4",
+      "phone": "(709) 725-0325",
+      "email": "joyetconsulting@gmail.com",
+      "website": null,
+      "category_slug": "accounting",
+      "latitude": 47.5615,
+      "longitude": -52.7126,
+      "founded_year": null,
+      "tags": ["accounting", "bookkeeping", "tax-preparation", "small-business"],
+      "social_links": {},
+      "ai_config": {
+        "greeting": "Hello! You have reached Joyet Consulting. Are you looking for help with taxes, bookkeeping, or business advice?",
+        "personality": "Precise and reassuring financial professional. Explains numbers in plain language and puts nervous clients at ease."
+      },
+      "ai_knowledge": [
+        ["Core Services", "Personal and corporate tax returns, monthly bookkeeping, payroll, and CRA representation.", "services", 9],
+        ["Tax Season", "Book early between February and April; extended hours during deadline weeks.", "policies", 9],
+        ["Small Business Support", "Startup guidance, GST/HST registration, and monthly reporting packages for owner-operators.", "services", 8],
+        ["Documents Needed", "Bring government ID, prior-year returns, and income slips; a checklist is emailed after booking.", "policies", 7],
+        ["Remote Service", "Secure document upload makes fully remote engagements easy.", "policies", 6]
+      ],
+      "services": [
+        ["Personal Tax Return", "Preparation and filing of T1 personal income tax returns.", 120, "fixed", 60, true],
+        ["Corporate Tax Return", "T2 corporate return preparation with financial statements.", null, "quote_required", null, true],
+        ["Monthly Bookkeeping", "Ongoing transaction processing, reconciliations, and reports.", 250, "fixed", null, true],
+        ["Payroll Services", "Payroll processing, remittances, and T4 filing.", 90, "fixed", null, true],
+        ["Initial Consultation", "Discussion of your situation and a service recommendation.", 0, "free", 30, true]
+      ],
+      "products": [],
+      "photos": [
+        ["https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=800", "Calculator and documents during tax preparation", true],
+        ["https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=800", "Accountant reviewing financial statements", false]
+      ],
+      "website_template": "classic",
+      "website_primary_color": "#1d4ed8",
+      "website_accent_color": "#64748b",
+      "hours": {
+        "mon": ["09:00", "17:00", false],
+        "tue": ["09:00", "17:00", false],
+        "wed": ["09:00", "17:00", false],
+        "thu": ["09:00", "17:00", false],
+        "fri": ["09:00", "17:00", false],
+        "sat": [null, null, true],
+        "sun": [null, null, true]
+      }
+    },
+    {
+      "name": "K-9steins",
+      "slug": "k-9steins",
+      "description": "Dog daycare, boarding, and grooming facility where pups play all day in supervised groups. K-9steins offers cage-free daycare, overnight boarding in comfy quarters, and full grooming services. Tire out your best friend and bring home a happy, clean dog.",
+      "address": "130 Portugal Cove Road, St. John's, NL A1B 2N8",
+      "phone": "(709) 725-0325",
+      "email": "k9steins@gmail.com",
+      "website": null,
+      "category_slug": "pet-services",
+      "latitude": 47.5615,
+      "longitude": -52.7126,
+      "founded_year": null,
+      "tags": ["dog-daycare", "boarding", "grooming", "dogs"],
+      "social_links": { "facebook": "k9steins" },
+      "ai_config": {
+        "greeting": "Woof! Welcome to K-9steins. Are you looking into daycare, boarding for an upcoming trip, or a grooming appointment?",
+        "personality": "Enthusiastic dog lover who asks about each pup's breed, temperament, and needs. Reassuring with first-time owners and thorough about requirements."
+      },
+      "ai_knowledge": [
+        ["Temperament Assessment", "All daycare and boarding dogs complete a meet-and-greet assessment before their first group play day.", "policies", 9],
+        ["Vaccination Requirements", "Current rabies, distemper, and bordetella vaccines required; records needed before booking.", "policies", 9],
+        ["Daycare Structure", "Supervised indoor and outdoor play groups sorted by size and energy level, with nap time midday.", "services", 8],
+        ["Boarding", "Overnight guests enjoy daytime play, evening walks, and their own bedding from home.", "services", 8],
+        ["Grooming", "Baths, nail trims, full grooms, and de-shedding treatments by appointment.", "services", 7]
+      ],
+      "services": [
+        ["Full-Day Daycare", "Supervised group play from drop-off to pick-up.", 28, "fixed", 600, false],
+        ["Overnight Boarding", "Comfy overnight stays with full days of play.", 45, "fixed", null, true],
+        ["Full Groom", "Bath, haircut, nails, and ears for all breeds.", 75, "fixed", 120, true],
+        ["Nail Trim", "Quick walk-in nail clipping and filing.", 20, "fixed", 15, false],
+        ["De-Shedding Treatment", "Undercoat removal for heavy shedders.", 55, "fixed", 75, true]
+      ],
+      "products": [
+        ["Dog Treats", "House-baked peanut butter dog treats by the bag.", "fixed", null, "retail"]
+      ],
+      "photos": [
+        ["https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=800", "Happy dogs playing together at daycare", true],
+        ["https://images.unsplash.com/photo-1450778869180-41d0601e046e?w=800", "Dog being groomed and brushed", false],
+        ["https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=800", "Friendly dog waiting for playtime", false]
+      ],
+      "website_template": "modern",
+      "website_primary_color": "#16a34a",
+      "website_accent_color": "#84cc16",
+      "hours": {
+        "mon": ["09:00", "19:00", false],
+        "tue": ["09:00", "19:00", false],
+        "wed": ["09:00", "19:00", false],
+        "thu": ["09:00", "19:00", false],
+        "fri": ["09:00", "19:00", false],
+        "sat": ["09:00", "17:00", false],
+        "sun": [null, null, true]
+      }
+    },
+    {
+      "name": "Maid To Sparkle",
+      "slug": "maid-to-sparkle",
+      "description": "Residential cleaning service making homes shine with recurring cleans, move-out cleans, and deep cleans. Maid To Sparkle's vetted, insured cleaners bring all supplies and follow a detailed checklist every visit. Book weekly, bi-weekly, or one-time online or by phone.",
+      "address": "58 Columbus Drive, St. John's, NL A1A 2G9",
+      "phone": "(709) 325-6423",
+      "email": "maidtosparklenl@gmail.com",
+      "website": null,
+      "category_slug": "house-cleaning",
+      "latitude": 47.5615,
+      "longitude": -52.7126,
+      "founded_year": null,
+      "tags": ["house-cleaning", "recurring-clean", "move-out", "insured"],
+      "social_links": { "facebook": "maidtosparkle" },
+      "ai_config": {
+        "greeting": "Hi! Maid To Sparkle here. Would you like a quote for regular home cleaning, a deep clean, or a move-out clean?",
+        "personality": "Friendly and efficient scheduler. Gathers home details like bedrooms, bathrooms, and pets to give accurate quotes quickly."
+      },
+      "ai_knowledge": [
+        ["Service Area", "Serving St. John's, Mount Pearl, and Paradise with same-day quote turnaround.", "service-area", 8],
+        ["What Is Included", "Standard cleans cover kitchens, bathrooms, dusting, floors, and trash; inside fridges and ovens are add-ons.", "services", 9],
+        ["Recurring Discounts", "Weekly and bi-weekly plans receive reduced per-visit rates.", "pricing", 8],
+        ["Team & Supplies", "Background-checked cleaners arrive with all supplies and equipment; pet-friendly products available.", "policies", 8],
+        ["Access", "Most clients provide keys or lockbox codes; you do not need to be home during the clean.", "policies", 7]
+      ],
+      "services": [
+        ["Standard Home Clean", "Full routine clean of kitchen, bathrooms, and living areas.", 120, "fixed", 150, true],
+        ["Move-Out Deep Clean", "Empty-home deep clean to get deposits back.", 300, "fixed", 300, true],
+        ["Inside Fridge & Oven", "Add-on appliance detailing during any clean.", 40, "fixed", 45, true],
+        ["Weekly Plan", "Discounted recurring weekly cleaning service.", 100, "fixed", 120, true]
+      ],
+      "products": [],
+      "photos": [
+        ["https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800", "Cleaner wiping down a sparkling kitchen counter", true],
+        ["https://images.unsplash.com/photo-1528740561666-dc2479dc08ab?w=800", "Freshly cleaned and organized living room", false]
+      ],
+      "website_template": "minimal",
+      "website_primary_color": "#06b6d4",
+      "website_accent_color": "#a5f3fc",
+      "hours": {
+        "mon": ["07:30", "18:00", false],
+        "tue": ["07:30", "18:00", false],
+        "wed": ["07:30", "18:00", false],
+        "thu": ["07:30", "18:00", false],
+        "fri": ["07:30", "18:00", false],
+        "sat": ["08:00", "14:00", false],
+        "sun": [null, null, true]
+      }
+    },
+    {
+      "name": "Meow and More",
+      "slug": "meow-and-more",
+      "description": "Cat-focused boutique and service centre offering grooming, boarding, and everything feline. Meow and More is a cat-only haven with quiet boarding suites, gentle grooming, and unique toys and gifts. Because cats deserve specialists too.",
+      "address": "410 Newfoundland Drive, St. John's, NL A1A 3Y9",
+      "phone": "(709) 726-0909",
+      "email": "meowandmorenl@gmail.com",
+      "website": null,
+      "category_slug": "pet-services",
+      "latitude": 47.586,
+      "longitude": -52.709,
+      "founded_year": null,
+      "tags": ["cats", "cat-boarding", "grooming", "pet-boutique"],
+      "social_links": { "facebook": "meowandmore" },
+      "ai_config": {
+        "greeting": "Meow! Welcome to Meow and More. Is your feline friend due for grooming, or are you planning boarding for an upcoming trip?",
+        "personality": "Gentle cat enthusiast who understands feline temperaments. Calm and informative, especially with anxious cats and their worried humans."
+      },
+      "ai_knowledge": [
+        ["Cat-Only Facility", "A dog-free environment keeps cats relaxed during grooming and boarding stays.", "about", 9],
+        ["Boarding Suites", "Multi-level condos with daily playtime; bring familiar bedding to ease the transition.", "services", 8],
+        ["Grooming", "Nail trims, brushing, lion cuts, and sanitary trims by cat-experienced groomers.", "services", 8],
+        ["Vaccination Policy", "Up-to-date FVRCP and rabies vaccines required for boarding and grooming.", "policies", 8],
+        ["Boutique", "Toys, trees, collars, and quirky cat-themed gifts for their humans.", "products", 6]
+      ],
+      "services": [
+        ["Nail Trim", "Stress-aware claw trimming for cats of all moods.", 22, "fixed", 20, true],
+        ["Lion Cut", "Full body clip leaving mane, boots, and tail plume.", 85, "fixed", 90, true],
+        ["Boarding Per Night", "Private condo with daily playtime and cuddles.", 26, "fixed", null, true],
+        ["Brush-Out & De-Shed", "Thorough brushing session to remove loose undercoat.", 45, "fixed", 45, true]
+      ],
+      "products": [
+        ["Catnip Toys", "Handmade catnip kickers and mice loved by local cats.", "fixed", null, "retail"],
+        ["Cat Trees", "Carpeted climbing trees in multiple heights.", "quote_required", null, "retail"]
+      ],
+      "photos": [
+        ["https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=800", "Curious cat lounging in the boutique", true],
+        ["https://images.unsplash.com/photo-1518791841217-8f162f1e1131?w=800", "Playful kitten with a toy", false],
+        ["https://images.unsplash.com/photo-1543852786-1cf6624b9987?w=800", "Relaxed cat resting in a cozy bed", false]
+      ],
+      "website_template": "modern",
+      "website_primary_color": "#16a34a",
+      "website_accent_color": "#f59e0b",
+      "hours": {
+        "mon": ["09:00", "18:00", false],
+        "tue": ["09:00", "18:00", false],
+        "wed": ["09:00", "18:00", false],
+        "thu": ["09:00", "18:00", false],
+        "fri": ["09:00", "18:00", false],
+        "sat": ["09:00", "18:00", false],
+        "sun": ["12:00", "17:00", false]
+      }
+    },
+    {
+      "name": "Music Community NL",
+      "slug": "music-community-nl",
+      "description": "Non-profit organization connecting, supporting, and promoting musicians across Newfoundland and Labrador. Music Community NL runs workshops, showcases, and mentorship programs while advocating for a stronger local music industry. Join as a member to access gigs, grants, and a community of artists.",
+      "address": "95 Bond Street, St. John's, NL A1C 1W7",
+      "phone": "(709) 754-2574",
+      "email": "info@musiccommunitynl.com",
+      "website": "musiccommunitynl.com",
+      "category_slug": "non-profit",
+      "latitude": 47.5615,
+      "longitude": -52.7126,
+      "founded_year": null,
+      "tags": ["non-profit", "music", "workshops", "community"],
+      "social_links": { "instagram": "musiccommunitynl", "facebook": "musiccommunitynl" },
+      "ai_config": {
+        "greeting": "Hello fellow music lover! Welcome to Music Community NL. Are you a musician looking for support, or interested in our programs and events?",
+        "personality": "Passionate and inclusive arts advocate. Encourages emerging artists, shares resources generously, and connects people to the right programs."
+      },
+      "ai_knowledge": [
+        ["Membership", "Annual memberships give musicians access to gig postings, grant writing help, discounted workshops, and showcase slots.", "membership", 9],
+        ["Programs", "Songwriting circles, home-recording workshops, and youth mentorship run throughout the year.", "programs", 8],
+        ["Events", "Regular open mics and member showcases at venues around St. John's.", "events", 8],
+        ["Advocacy", "Works with government and industry partners on fair pay, venues, and funding for local artists.", "about", 7],
+        ["Volunteering", "Volunteers help run events, and roles count toward school volunteer hours.", "policies", 6]
+      ],
+      "services": [
+        ["Annual Membership", "Full member benefits for individual musicians.", 40, "fixed", null, false],
+        ["Workshop Registration", "Seats in skill-building workshops led by industry pros.", 25, "fixed", 120, true],
+        ["Showcase Application", "Apply to perform at an upcoming member showcase.", 0, "free", null, true]
+      ],
+      "products": [
+        ["Compilation Album", "Annual compilation album featuring member artists.", "fixed", "https://musiccommunitynl.com/store", "retail"],
+        ["Supporter Donation", "One-time donation supporting programs for local musicians.", "fixed", "https://musiccommunitynl.com/donate", "donation"]
+      ],
+      "photos": [
+        ["https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=800", "Musician performing at a community showcase", true],
+        ["https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=800", "Crowd enjoying live local music", false],
+        ["https://images.unsplash.com/photo-1510915361894-db8b60106cb1?w=800", "Acoustic guitar at a songwriting workshop", false]
+      ],
+      "website_template": "modern",
+      "website_primary_color": "#0ea5e9",
+      "website_accent_color": "#a855f7",
+      "hours": {
+        "mon": ["09:00", "17:00", false],
+        "tue": ["09:00", "17:00", false],
+        "wed": ["09:00", "17:00", false],
+        "thu": ["09:00", "17:00", false],
+        "fri": ["09:00", "17:00", false],
+        "sat": [null, null, true],
+        "sun": [null, null, true]
+      }
+    },
+    {
+      "name": "Natalie Hynes Photography",
+      "slug": "natalie-hynes-photography",
+      "description": "Portrait and wedding photographer capturing genuine moments across Newfoundland. Natalie Hynes Photography specializes in relaxed, natural-light sessions that feel like memories rather than poses. From engagements to newborns to family milestones, every gallery tells your story.",
+      "address": "17 Cochrane Street, St. John's, NL A1C 3L9",
+      "phone": "(709) 746-6046",
+      "email": "info@nataliehynes.com",
+      "website": "nataliehynes.com",
+      "category_slug": "photography",
+      "latitude": 47.523,
+      "longitude": -52.738,
+      "founded_year": null,
+      "tags": ["photography", "weddings", "portraits", "family"],
+      "social_links": { "instagram": "nataliehynesphotography", "facebook": "nataliehynesphotography" },
+      "ai_config": {
+        "greeting": "Hi! So excited you are here. Are you dreaming up a wedding, family session, or something else worth remembering?",
+        "personality": "Warm and artistic photographer who puts clients at ease. Asks about vision and locations, and explains packages and timelines clearly."
+      },
+      "ai_knowledge": [
+        ["Specialties", "Weddings, elopements, engagements, families, newborns, and branding sessions.", "services", 9],
+        ["Booking Timeline", "Weddings book 8-14 months ahead; portrait sessions usually available within a few weeks.", "policies", 9],
+        ["Session Experience", "Sessions are guided and relaxed with light posing direction; galleries delivered within 2-3 weeks.", "process", 8],
+        ["Locations", "Favourite spots include Quidi Vidi, Cape Spear, and Signal Hill; travel within the province quoted separately.", "service-area", 7],
+        ["Deliverables", "Print releases included; albums and prints available to order from your gallery.", "products", 6]
+      ],
+      "services": [
+        ["Wedding Collection", "Full-day wedding coverage with online gallery and print release.", 3200, "fixed", 480, true],
+        ["Engagement Session", "One-hour engagement shoot at a location of your choice.", 350, "fixed", 60, true],
+        ["Family Session", "Relaxed 45-minute family portraits for up to six people.", 300, "fixed", 45, true],
+        ["Branding Mini Session", "Short content session for small businesses and creatives.", 275, "fixed", 30, true]
+      ],
+      "products": [
+        ["Fine Art Prints", "Museum-quality prints in standard and large formats.", "quote_required", "https://nataliehynes.com/prints", "retail"],
+        ["Heirloom Album", "Layflat linen album designed from your gallery.", "quote_required", "https://nataliehynes.com/albums", "retail"]
+      ],
+      "photos": [
+        ["https://images.unsplash.com/photo-1542038784456-1ea8e935640e?w=800", "Photographer holding a camera during a session", true],
+        ["https://images.unsplash.com/photo-1519741497674-611481863552?w=800", "Romantic wedding couple portrait outdoors", false],
+        ["https://images.unsplash.com/photo-1471341971476-ae15ff5dd4ea?w=800", "Family laughing together during a photo session", false]
+      ],
+      "website_template": "minimal",
+      "website_primary_color": "#6366f1",
+      "website_accent_color": "#f472b6",
+      "hours": {
+        "mon": ["09:00", "17:00", false],
+        "tue": ["09:00", "17:00", false],
+        "wed": ["09:00", "17:00", false],
+        "thu": ["09:00", "17:00", false],
+        "fri": ["09:00", "17:00", false],
+        "sat": ["10:00", "18:00", false],
+        "sun": [null, null, true]
+      }
+    },
+    {
+      "name": "Sinaing",
+      "slug": "sinaing",
+      "description": "Filipino kitchen serving authentic home-style dishes like adobo, pancit, lumpia, and halo-halo. Sinaing brings the bold, comforting flavours of the Philippines to St. John's. Family recipes, generous portions, and a warm welcome await.",
+      "address": "260 Water Street, St. John's, NL A1C 1C1",
+      "phone": "(709) 351-5889",
+      "email": "sinaingnl@gmail.com",
+      "website": null,
+      "category_slug": "filipino-restaurant",
+      "latitude": 47.5615,
+      "longitude": -52.7126,
+      "founded_year": null,
+      "tags": ["filipino-food", "asian-cuisine", "takeout", "family-recipes"],
+      "social_links": {},
+      "ai_config": {
+        "greeting": "Kumusta! Welcome to Sinaing. Have you tried authentic Filipino food before, or shall I recommend a favourite to start?",
+        "personality": "Hospitable and proud ambassador of Filipino cuisine. Guides newcomers through the menu patiently and loves sharing family recipe stories."
+      },
+      "ai_knowledge": [
+        ["Signature Dishes", "Chicken adobo, pancit bihon, pork sinigang, crispy lumpia, and lechon-style belly are customer favourites.", "menu", 10],
+        ["Halo-Halo", "Traditional shaved-ice dessert with ube, leche flan, and sweet beans, made fresh daily.", "menu", 8],
+        ["Spice Levels", "Most dishes are mild by default; ask for chili on the side if you like heat.", "menu", 7],
+        ["Takeout & Catering", "Call ahead for takeout; party trays of pancit and lumpia available with 48 hours notice.", "services", 8],
+        ["The Name", "Sinaing means simmered or braised in Tagalog, reflecting slow-cooked home-style cooking.", "about", 6]
+      ],
+      "services": [
+        ["Dine-In Lunch", "Sit-down lunch service with daily specials.", 0, "free", 60, false],
+        ["Takeout Orders", "Phone-ahead pickup of the full menu.", 0, "free", 20, false],
+        ["Party Trays", "Half or full trays of pancit, lumpia, and rice for gatherings.", 65, "fixed", null, true],
+        ["Halo-Halo To Go", "Layered Filipino dessert packed for takeaway.", 9, "fixed", 10, false]
+      ],
+      "products": [],
+      "photos": [
+        ["https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800", "Hearty Filipino dishes served family style", true],
+        ["https://images.unsplash.com/photo-1512058564366-18510be2db19?w=800", "Steaming bowl of Asian noodle stir fry", false],
+        ["https://images.unsplash.com/photo-1562565652-a0d8f0c59eb4?w=800", "Fresh spring rolls ready to serve", false]
+      ],
+      "website_template": "classic",
+      "website_primary_color": "#ea580c",
+      "website_accent_color": "#facc15",
+      "hours": {
+        "mon": ["11:00", "21:00", false],
+        "tue": ["11:00", "21:00", false],
+        "wed": ["11:00", "21:00", false],
+        "thu": ["11:00", "21:00", false],
+        "fri": ["11:00", "21:00", false],
+        "sat": ["11:00", "21:00", false],
+        "sun": [null, null, true]
+      }
+    },
+    {
+      "name": "SpiceX",
+      "slug": "spicex",
+      "description": "Neighbourhood convenience store stocking snacks, drinks, groceries, and everyday essentials. SpiceX also carries a surprising selection of international spices and sauces alongside lottery, ATM, and grab-and-go options. Open late every day for last-minute needs.",
+      "address": "330 Topsail Road, St. John's, NL A1E 2B8",
+      "phone": null,
+      "email": "spicexstjohns@gmail.com",
+      "website": null,
+      "category_slug": "convenience-store",
+      "latitude": 47.5615,
+      "longitude": -52.7126,
+      "founded_year": null,
+      "tags": ["convenience-store", "groceries", "snacks", "open-late"],
+      "social_links": {},
+      "ai_config": {
+        "greeting": "Hey! Welcome to SpiceX. Anything particular you are hunting for, or want to know what we carry?",
+        "personality": "Quick and helpful corner-store clerk. Answers stock questions directly and lets customers know about deals and new arrivals."
+      },
+      "ai_knowledge": [
+        ["Store Range", "Snacks, beverages, dairy, bread, canned goods, toiletries, and household basics.", "products", 8],
+        ["International Shelf", "Rotating selection of South Asian spices, sauces, and instant noodles.", "products", 7],
+        ["Hours", "Open every day from 8 am to 10 pm, including most holidays.", "policies", 8],
+        ["Extras", "ATM on site, lottery tickets, and prepaid phone cards available.", "services", 6]
+      ],
+      "services": [
+        ["In-Store Shopping", "Browse snacks, groceries, and essentials seven days a week.", 0, "free", 15, false],
+        ["Lottery & ATM", "Self-service ATM and lottery sales at the counter.", 0, "free", 5, false],
+        ["Prepaid Cards & Top-Ups", "Phone top-ups and prepaid cards sold at the counter.", 0, "free", 5, false]
+      ],
+      "products": [
+        ["Snack Bundle", "Chips, chocolate, and pop combo deal at the counter.", "fixed", null, "retail"],
+        ["Spice Packs", "Popular curry spice blends from the international shelf.", "fixed", null, "retail"]
+      ],
+      "photos": [
+        ["https://images.unsplash.com/photo-1604719312566-8912e9227c6a?w=800", "Convenience store shelves stocked with snacks", true],
+        ["https://images.unsplash.com/photo-1534723452862-4c874018d66d?w=800", "Colourful drink fridge glowing at night", false]
+      ],
+      "website_template": "minimal",
+      "website_primary_color": "#65a30d",
+      "website_accent_color": "#f59e0b",
+      "hours": {
+        "mon": ["08:00", "22:00", false],
+        "tue": ["08:00", "22:00", false],
+        "wed": ["08:00", "22:00", false],
+        "thu": ["08:00", "22:00", false],
+        "fri": ["08:00", "22:00", false],
+        "sat": ["08:00", "22:00", false],
+        "sun": ["08:00", "22:00", false]
+      }
+    },
+    {
+      "name": "The Art Factory",
+      "slug": "the-art-factory",
+      "description": "Creative studio space offering paint-your-own pottery, canvas painting, and art workshops for all ages. The Art Factory is where birthday parties, date nights, and school breaks turn into masterpieces. No experience needed, just bring your imagination.",
+      "address": "72 Harbour Drive, St. John's, NL A1C 6J3",
+      "phone": null,
+      "email": "theartfactorynl@gmail.com",
+      "website": null,
+      "category_slug": "art-entertainment",
+      "latitude": 47.5615,
+      "longitude": -52.7126,
+      "founded_year": null,
+      "tags": ["art-studio", "pottery-painting", "workshops", "kids-activities"],
+      "social_links": {},
+      "ai_config": {
+        "greeting": "Hi artist! Welcome to The Art Factory. Are you planning a visit to paint, booking a party, or curious about our workshops?",
+        "personality": "Playful and encouraging art teacher. Celebrates creativity at every skill level and helps visitors pick projects that suit them."
+      },
+      "ai_knowledge": [
+        ["Drop-In Pottery", "Walk in anytime to paint pre-fired pottery pieces; prices start around 12 dollars plus studio fee.", "services", 9],
+        ["Pickup Timeline", "Finished pottery is glazed and fired, ready for pickup in about 7-10 days.", "process", 8],
+        ["Parties", "Birthday party packages include a project, decorations, and table time for up to 12 kids.", "services", 9],
+        ["Workshops", "Scheduled canvas nights, clay hand-building, and school-holiday camps.", "programs", 8],
+        ["All Ages", "Projects and seating work for toddlers through adults; aprons provided.", "policies", 6]
+      ],
+      "services": [
+        ["Paint-Your-Own Pottery", "Choose a piece and paint it; glazing and firing included.", 18, "fixed", 90, false],
+        ["Kids Birthday Party", "Two-hour guided art party for up to 12 children.", 275, "fixed", 120, true],
+        ["Canvas Paint Night", "Guided step-by-step painting evening for adults.", 35, "fixed", 120, true],
+        ["Clay Hand-Building Workshop", "Sculpt and glaze your own clay creation over two visits.", 60, "fixed", 120, true],
+        ["School Holiday Camp", "Half-day art camp during school breaks.", 45, "fixed", 180, true]
+      ],
+      "products": [],
+      "photos": [
+        ["https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=800", "Colourful art supplies on a studio table", true],
+        ["https://images.unsplash.com/photo-1452802447250-470a88ac82bc?w=800", "Hands painting a canvas in a workshop", false],
+        ["https://images.unsplash.com/photo-1460661419201-fd4cecdf8a8b?w=800", "Pottery painting in progress", false]
+      ],
+      "website_template": "modern",
+      "website_primary_color": "#d946ef",
+      "website_accent_color": "#f97316",
+      "hours": {
+        "mon": [null, null, true],
+        "tue": ["10:00", "18:00", false],
+        "wed": ["10:00", "18:00", false],
+        "thu": ["10:00", "18:00", false],
+        "fri": ["10:00", "18:00", false],
+        "sat": ["10:00", "18:00", false],
+        "sun": [null, null, true]
+      }
+    },
+    {
+      "name": "Tonys Toy Shop",
+      "slug": "tonys-toy-shop",
+      "description": "Independent toy store packed with classics, puzzles, board games, and unique finds for every age. Tony's Toy Shop prides itself on quality toys that spark imagination rather than screens. Friendly staff help you find the perfect gift, wrapped for free.",
+      "address": "155 Elizabeth Avenue, St. John's, NL A1B 1S9",
+      "phone": null,
+      "email": "toys@tonystoyshop.ca",
+      "website": "tonystoyshop.ca",
+      "category_slug": "toy-store",
+      "latitude": 47.5615,
+      "longitude": -52.7126,
+      "founded_year": null,
+      "tags": ["toys", "board-games", "puzzles", "gifts"],
+      "social_links": {},
+      "ai_config": {
+        "greeting": "Hi! Welcome to Tony's Toy Shop. Hunting for a gift, a rainy-day puzzle, or the hottest toy of the season?",
+        "personality": "Cheerful and knowledgeable toy expert. Great at suggesting age-appropriate gifts within budget and sharing what kids love right now."
+      },
+      "ai_knowledge": [
+        ["Toy Selection", "Wooden toys, STEM kits, plush, action figures, puzzles, and a big board game wall.", "products", 9],
+        ["Gift Help", "Tell us the child's age and interests and staff will shortlist options; free gift wrapping on everything.", "services", 9],
+        ["Game Nights", "Monthly family board game afternoons in store; check social media for dates.", "events", 7],
+        ["Special Orders", "Out-of-stock favourites can usually be ordered in within a week.", "policies", 7],
+        ["Layaway", "Layaway available on purchases over 75 dollars before the holidays.", "policies", 6]
+      ],
+      "services": [
+        ["Gift Wrapping", "Complimentary wrapping on any purchase.", 0, "free", 5, false],
+        ["Gift Registry", "Create a wishlist for birthdays and baby showers.", 0, "free", 30, true],
+        ["Board Game Demo", "Learn a new game with a staff demo before buying.", 0, "free", 20, false]
+      ],
+      "products": [
+        ["Wooden Train Set", "Classic 50-piece wooden railway compatible with major brands.", "fixed", "https://tonystoyshop.ca/wooden", "retail"],
+        ["Family Board Games", "Staff-picked favourites for game night, ages 6 and up.", "fixed", "https://tonystoyshop.ca/games", "retail"],
+        ["STEM Kits", "Science and building kits for curious kids 8-plus.", "fixed", "https://tonystoyshop.ca/stem", "retail"]
+      ],
+      "photos": [
+        ["https://images.unsplash.com/photo-1558060370-d644479cb6f7?w=800", "Shelves stacked with colourful toys", true],
+        ["https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?w=800", "Wooden toys arranged on a display table", false],
+        ["https://images.unsplash.com/photo-1587654780291-39c9404d746b?w=800", "Board games and puzzles ready to play", false]
+      ],
+      "website_template": "classic",
+      "website_primary_color": "#dc2626",
+      "website_accent_color": "#f59e0b",
+      "hours": {
+        "mon": ["10:00", "18:00", false],
+        "tue": ["10:00", "18:00", false],
+        "wed": ["10:00", "18:00", false],
+        "thu": ["10:00", "18:00", false],
+        "fri": ["10:00", "18:00", false],
+        "sat": ["10:00", "18:00", false],
+        "sun": ["12:00", "17:00", false]
+      }
+    },
+    {
+      "name": "Andrea's Fitness",
+      "slug": "andreas-fitness",
+      "description": "Welcoming gym and fitness studio offering strength training, group classes, and personal coaching for every level. Andrea's Fitness combines solid equipment with a supportive, judgement-free community. Early open and late close fit workouts around any schedule.",
+      "address": "210 Lemarchant Road, St. John's, NL A1E 1S8",
+      "phone": null,
+      "email": "andreasfitnessnl@gmail.com",
+      "website": null,
+      "category_slug": "fitness",
+      "latitude": 47.5615,
+      "longitude": -52.7126,
+      "founded_year": null,
+      "tags": ["gym", "fitness-classes", "personal-training", "strength"],
+      "social_links": {},
+      "ai_config": {
+        "greeting": "Hey! Ready to move? Welcome to Andrea's Fitness. Want info on memberships, classes, or personal training?",
+        "personality": "Motivating but approachable fitness coach. Focuses on goals and consistency over intensity, and welcomes beginners warmly."
+      },
+      "ai_knowledge": [
+        ["Facility", "Full free-weight area, cardio machines, functional training zone, and a group class studio.", "facilities", 9],
+        ["Classes", "Spin, HIIT, yoga, and bootcamp classes run mornings and evenings six days a week.", "programs", 8],
+        ["Memberships", "Flexible month-to-month memberships with no lock-in contract; student and couple rates available.", "pricing", 9],
+        ["Personal Training", "Certified trainers offer one-on-one and small-group sessions with program design.", "services", 8],
+        ["Amenities", "Change rooms with showers, day lockers, and towel service.", "facilities", 6]
+      ],
+      "services": [
+        ["Monthly Membership", "Unlimited gym access with no contract.", 45, "fixed", null, true],
+        ["Group Fitness Class", "Drop-in access to any scheduled class.", 15, "fixed", 60, false],
+        ["Personal Training Session", "One-hour one-on-one coaching session.", 65, "fixed", 60, true],
+        ["Fitness Assessment", "Baseline assessment and goal-setting consult.", 0, "free", 45, true],
+        ["Small Group Training", "Semi-private training for 2-4 people.", 30, "fixed", 60, true]
+      ],
+      "products": [],
+      "photos": [
+        ["https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800", "Member lifting weights on the gym floor", true],
+        ["https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800", "Group fitness class in full swing", false],
+        ["https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=800", "Free weights racked in the strength area", false]
+      ],
+      "website_template": "modern",
+      "website_primary_color": "#f97316",
+      "website_accent_color": "#22c55e",
+      "hours": {
+        "mon": ["05:00", "22:00", false],
+        "tue": ["05:00", "22:00", false],
+        "wed": ["05:00", "22:00", false],
+        "thu": ["05:00", "22:00", false],
+        "fri": ["05:00", "22:00", false],
+        "sat": ["07:00", "20:00", false],
+        "sun": ["07:00", "20:00", false]
+      }
+    },
+    {
+      "name": "CREPAULIE",
+      "slug": "crepaulie",
+      "description": "Fast-casual creperie flipping sweet and savoury crepes made to order with local ingredients. CREPAULIE pairs French street food with Newfoundland flair, from ham and cheese classics to berry-and-chocolate indulgence. Quick counter service perfect for lunch or a treat.",
+      "address": "305 Water Street, St. John's, NL A1C 1B5",
+      "phone": null,
+      "email": "hello@crepaulie.ca",
+      "website": "crepaulie.ca",
+      "category_slug": "fast-food",
+      "latitude": 47.5615,
+      "longitude": -52.7126,
+      "founded_year": null,
+      "tags": ["crepes", "fast-food", "lunch", "dessert"],
+      "social_links": {},
+      "ai_config": {
+        "greeting": "Bonjour! Welcome to CREPAULIE. Craving something sweet or savoury today?",
+        "personality": "Friendly and efficient crepe chef. Makes quick menu suggestions and happily customizes fillings for dietary needs."
+      },
+      "ai_knowledge": [
+        ["Menu", "Sweet crepes with fruit, chocolate, and caramel; savoury galettes with ham, cheese, egg, and veggies.", "menu", 9],
+        ["Made To Order", "Every crepe is cooked fresh on the griddle in about four minutes.", "process", 8],
+        ["Dietary Options", "Gluten-free buckwheat galettes and vegan chocolate available.", "menu", 8],
+        ["Combos", "Lunch combos pair a savoury crepe with a drink and a mini sweet crepe.", "menu", 7],
+        ["Catering", "Crepe catering carts available for events with advance booking.", "services", 6]
+      ],
+      "services": [
+        ["Counter Service", "Order at the counter for dine-in or takeaway.", 0, "free", 20, false],
+        ["Event Catering", "Mobile crepe station for weddings, markets, and parties.", null, "quote_required", null, true],
+        ["Lunch Combo", "Savoury crepe, drink, and mini sweet crepe deal.", 16, "fixed", 25, false]
+      ],
+      "products": [
+        ["Crepe Gift Card", "Prepaid card redeemable for any menu item.", "fixed", "https://crepaulie.ca/gift-cards", "gift_card"]
+      ],
+      "photos": [
+        ["https://images.unsplash.com/photo-1519676867240-f03562e64548?w=800", "Golden crepe folded with fresh toppings", true],
+        ["https://images.unsplash.com/photo-1484723091739-30a097e8f929?w=800", "Delicious plated brunch dish at the counter", false],
+        ["https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800", "Savoury wrap fresh off the griddle", false]
+      ],
+      "website_template": "modern",
+      "website_primary_color": "#e11d48",
+      "website_accent_color": "#facc15",
+      "hours": {
+        "mon": ["11:00", "21:00", false],
+        "tue": ["11:00", "21:00", false],
+        "wed": ["11:00", "21:00", false],
+        "thu": ["11:00", "21:00", false],
+        "fri": ["11:00", "21:00", false],
+        "sat": ["11:00", "21:00", false],
+        "sun": [null, null, true]
+      }
+    },
+    {
+      "name": "Creative Cultural Experiences",
+      "slug": "creative-cultural-experiences",
+      "description": "Indigenous-led cultural tourism company sharing Newfoundland traditions through hands-on experiences. Creative Cultural Experiences offers storytelling sessions, craft workshops, and guided cultural walks for visitors and school groups. Every experience supports local knowledge keepers and artists.",
+      "address": "1 Bonaventure Avenue, St. John's, NL A1C 5P5",
+      "phone": null,
+      "email": "creativecultural.experiences@gmail.com",
+      "website": null,
+      "category_slug": "art-entertainment",
+      "latitude": 47.5911,
+      "longitude": -52.7482,
+      "founded_year": null,
+      "tags": ["cultural-tours", "workshops", "storytelling", "indigenous"],
+      "social_links": { "facebook": "creativeculturalexperiences" },
+      "ai_config": {
+        "greeting": "Welcome, friend. We share the stories and traditions of this place. Would you like to learn about our cultural experiences or book a session?",
+        "personality": "Warm and wise cultural guide. Shares stories respectfully, answers questions thoughtfully, and helps groups choose meaningful experiences."
+      },
+      "ai_knowledge": [
+        ["Experiences Offered", "Storytelling circles, drum-making and beadwork workshops, and guided cultural walks near Pippy Park.", "programs", 9],
+        ["Group Bookings", "School groups, conferences, and tour operators welcome; programs adapted to age and group size.", "services", 8],
+        ["Season", "Indoor programming runs year-round; outdoor walks operate May through October.", "policies", 7],
+        ["Community Impact", "Programs are led by local knowledge keepers, with proceeds supporting cultural preservation.", "about", 8],
+        ["Booking", "Advance booking required; contact via phone or Facebook to arrange dates.", "policies", 8]
+      ],
+      "services": [
+        ["Storytelling Circle", "Traditional stories shared around the fire or indoors.", 25, "fixed", 90, true],
+        ["Craft Workshop", "Hands-on beadwork or drum-making with all materials.", 65, "fixed", 120, true],
+        ["Guided Cultural Walk", "Interpreted walk exploring local history and land.", 35, "fixed", 90, true],
+        ["School Program", "Curriculum-linked cultural session for classes.", 12, "fixed", 90, true]
+      ],
+      "products": [
+        ["Handmade Crafts", "Beadwork and carvings made by program participants and elders.", "quote_required", null, "retail"]
+      ],
+      "photos": [
+        ["https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?w=800", "Storyteller sharing culture with a gathered group", true],
+        ["https://images.unsplash.com/photo-1547153760-18fc86324498?w=800", "Traditional craft materials laid out for a workshop", false],
+        ["https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=800", "Cultural performance with drums", false]
+      ],
+      "website_template": "minimal",
+      "website_primary_color": "#d946ef",
+      "website_accent_color": "#0ea5e9",
+      "hours": {
+        "mon": ["09:00", "17:00", false],
+        "tue": ["09:00", "17:00", false],
+        "wed": ["09:00", "17:00", false],
+        "thu": ["09:00", "17:00", false],
+        "fri": ["09:00", "17:00", false],
+        "sat": [null, null, true],
+        "sun": [null, null, true]
+      }
+    }
+  ]
+}
