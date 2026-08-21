@@ -379,7 +379,7 @@ export async function updateBusinessProducts(
             sort_order: p.sortOrder,
             is_active: p.isActive,
           })),
-          onConflict: "id"
+          { onConflict: "id" }
         );
 
       if (upsertError) return { ok: false, error: upsertError.message };

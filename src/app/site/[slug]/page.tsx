@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { createAnonClient } from "@/lib/supabase/anon";
+import type { BusinessProduct } from "@/lib/business";
 import type { SiteBusiness } from "@/components/site/templates/types";
 import ClassicTemplate from "@/components/site/templates/classic";
 import ModernTemplate from "@/components/site/templates/modern";
@@ -68,6 +69,20 @@ type Row = {
       last_name: string | null;
     } | null;
   }[];
+  products: {
+    id: string;
+    name: string;
+    description: string | null;
+    price: number | null;
+    price_type: string;
+    min_price: number | null;
+    max_price: number | null;
+    currency: string;
+    image_url: string | null;
+    url: string | null;
+    product_type: string;
+    is_active: boolean;
+  }[];
 };
 
 function mapBusiness(row: Row): SiteBusiness {
@@ -125,13 +140,14 @@ function mapBusiness(row: Row): SiteBusiness {
       name: p.name,
       description: p.description,
       price: p.price,
-      priceType: p.price_type as SiteBusiness["products"][number]["priceType"],
+      priceType: p.price_type as BusinessProduct["priceType"],
       minPrice: p.min_price,
       maxPrice: p.max_price,
       currency: p.currency,
       imageUrl: p.image_url,
       url: p.url,
-      productType: p.product_type as SiteBusiness["products"][number]["productType"],
+      productType: p.product_type as BusinessProduct["productType"],
+      sortOrder: 0,
       isActive: p.is_active,
     })),
     hours: row.hours.map((h) => ({

@@ -19,10 +19,10 @@ function stars(rating: number) {
 
 function formatPrice(
   price: number,
+  priceType: string,
+  minPrice: number | null,
+  maxPrice: number | null,
   currency: string,
-  type: "fixed" | "starting_from" | "range" | "quote_required",
-  min?: number | null,
-  max?: number | null,
 ) {
   const fmt = new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -31,10 +31,10 @@ function formatPrice(
     maximumFractionDigits: 0,
   });
 
-  if (type === "quote_required") return "Quote";
-  if (type === "starting_from") return `From ${fmt.format(price)}`;
-  if (type === "range" && min != null && max != null)
-    return `${fmt.format(min)} – ${fmt.format(max)}`;
+  if (priceType === "quote_required") return "Quote";
+  if (priceType === "starting_from") return `From ${fmt.format(price)}`;
+  if (priceType === "range" && minPrice != null && maxPrice != null)
+    return `${fmt.format(minPrice)} – ${fmt.format(maxPrice)}`;
   return fmt.format(price);
 }
 
@@ -129,7 +129,7 @@ export default function MinimalTemplate({
                   )}
                 </div>
                 <span className="ml-4 shrink-0 font-medium" style={{ color: "var(--accent)" }}>
-                  {formatPrice(s.price ?? 0, s.currency, s.priceType, s.minPrice, s.maxPrice)}
+                  {formatPrice(s.price ?? 0, s.priceType, s.minPrice, s.maxPrice, s.currency)}
                 </span>
               </div>
             ))}
@@ -214,7 +214,6 @@ export default function MinimalTemplate({
                 </div>
               </section>
             )}
-            {photos && photos.length > 0 && (
       {b.reviews.length > 0 && (
         <section className="mx-auto max-w-2xl px-6 pb-20">
           <h2 className="mb-8 text-center font-serif text-2xl font-semibold tracking-tight">Reviews</h2>

@@ -113,6 +113,7 @@ type BusinessRow = {
   country: string | null;
   timezone: string;
   verification_status: string;
+  founded_year: number | null;
   categories: {
     is_primary: boolean;
     category: {
@@ -232,6 +233,7 @@ export async function getBusinessBySlug(
     country: row.country,
     timezone: row.timezone,
     verificationStatus: row.verification_status as BusinessProfile["verificationStatus"],
+    foundedYear: row.founded_year ?? null,
     categories: (row.categories ?? [])
       .map((link) => ({
         id: link.category.id,

@@ -170,10 +170,12 @@ export default function ModernTemplate({
             </div>
             <div className="flex-1 rounded-2xl p-6 text-center" style={{ backgroundColor: "color-mix(in srgb, var(--accent) 15%, transparent)" }}>
               {b.foundedYear && (
-                <div className="text-3xl font-bold text-white">
-                  {new Date().getFullYear() - b.foundedYear}+
-                </div>
-                <div className="mt-1 text-sm text-white/60">Years</div>
+                <>
+                  <div className="text-3xl font-bold text-white">
+                    {new Date().getFullYear() - b.foundedYear}+
+                  </div>
+                  <div className="mt-1 text-sm text-white/60">Years</div>
+                </>
               )}
             </div>
           </div>

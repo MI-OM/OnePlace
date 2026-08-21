@@ -9,6 +9,7 @@ import {
   updateBusinessServices,
   updateBusinessImages,
   updateBusinessWebsite,
+  updateBusinessProducts,
 } from "@/lib/business/settings-actions";
 import { Button } from "@/components/ui/button";
 import { ImageUpload, GalleryUpload, type GalleryPhoto } from "@/components/ui/image-upload";
@@ -17,7 +18,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { QrCodeSection } from "@/components/business/qr-code-section";
 
-type Tab = "profile" | "images" | "ai" | "hours" | "services" | "website";
+type Tab = "profile" | "images" | "ai" | "hours" | "services" | "website" | "products";
 
 const TABS: { id: Tab; label: string }[] = [
   { id: "profile", label: "Profile" },
@@ -216,14 +217,23 @@ export function BusinessSettingsForm({
 
   const handleSaveProducts = () => {
     startTransition(async () => {
+      if (!productName.trim()) {
+        toast.error("Product name is required.");
+        return;
+      }
       const result = await updateBusinessProducts(businessId, {
-        productName,
-        productUrl,
-        productPrice,
-        productPriceType,
-        productProductType,
-        productSortOrder,
-        productIsActive,
+        products: [{
+          name: productName,
+          description: productUrl || undefined,
+          url: productUrl || undefined,
+          price: productPrice || undefined,
+          priceType: productPriceType,
+          productType: productProductType,
+          sortOrder: productSortOrder,
+          isActive: productIsActive,
+          currency: "CAD",
+        }],
+        deletedIds: [],
       });
       if (result.error) {
         toast.error(result.error);
@@ -266,7 +276,7 @@ export function BusinessSettingsForm({
             <div className="grid grid-cols-3 gap-4">
               <Field label="City" value={city} onChange={setCity} />
               <Field label="Province" value={province} onChange={setProvince} />
-              <Field label="Founded year" value={foundedYear} onChange={setFoundedYear} />
+              <Field label="Founded year" value={foundedYear != null ? String(foundedYear) : ""} onChange={(v) => setFoundedYear(v ? Number(v) : null)} />
               <Field label="Postal code" value={postalCode} onChange={setPostalCode} />
             </div>
             <Button onClick={handleSaveProfile} disabled={pending}>
@@ -536,31 +546,30 @@ export function BusinessSettingsForm({
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <Field label="Price" value={String(productPrice ?? "")} onChange={(v) =>
-                    setProductPrice(v ? Number(v) : null)}
+                    setProductPrice(Number(v) || 0)}
                   />
                   <Field label="Price type" 
                     select 
                       selectedValue={productPriceType} 
-                      onValueChange={(v) => setProductPriceType(v)}
+                      onValueChange={(v) => setProductPriceType(v as typeof productPriceType)}
                   >
                     <option value="fixed">Fixed</option>
                     <option value="starting_from">Starting from</option>
                     <option value="range">Range</option>
                     <option value="quote_required">Quote required</option>
-                  </select>
+                  </Field>
                 </div>
                 <Field label="Product type" 
                   select 
                     selectedValue={productProductType} 
-                    onValueChange={(v) => setProductProductType(v)}
+                    onValueChange={(v) => setProductProductType(v as typeof productProductType)}
                   >
                     <option value="product">Product</option>
                     <option value="digital">Digital</option>
                     <option value="gift_card">Gift card</option>
                     <option value="service_addon">Service addon</option>
-                  </select>
                 </Field>
-                <Field label="Sort order" value={String(productSortOrder)} onChange={setProductSortOrder} type="number" />
+                <Field label="Sort order" value={String(productSortOrder)} onChange={(v) => setProductSortOrder(Number(v) || 0)} type="number" />
                 <Toggle label="Active" checked={productIsActive} onChange={setProductIsActive} />
               </div>
               <Button onClick={handleSaveProducts} disabled={pending}>
@@ -582,21 +591,37 @@ function Field({
   textarea,
   placeholder,
   type = "text",
+  select,
+  selectedValue,
+  onValueChange,
+  children,
 }: {
   label: string;
-  value: string;
-  onChange: (v: string) => void;
+  value?: string;
+  onChange?: (v: string) => void;
   textarea?: boolean;
   placeholder?: string;
   type?: string;
+  select?: boolean;
+  selectedValue?: string;
+  onValueChange?: (v: string) => void;
+  children?: React.ReactNode;
 }) {
   return (
     <div className="grid gap-1.5">
       <Label className="text-sm">{label}</Label>
-      {textarea ? (
+      {select ? (
+        <select
+          className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          value={selectedValue}
+          onChange={(e) => onValueChange?.(e.target.value)}
+        >
+          {children}
+        </select>
+      ) : textarea ? (
         <Textarea
           value={value}
-          onChange={(e) => onChange(e.target.value)}
+          onChange={(e) => onChange?.(e.target.value)}
           placeholder={placeholder}
           rows={3}
         />
@@ -604,7 +629,7 @@ function Field({
         <Input
           type={type}
           value={value}
-          onChange={(e) => onChange(e.target.value)}
+          onChange={(e) => onChange?.(e.target.value)}
           placeholder={placeholder}
         />
       )}

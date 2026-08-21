@@ -471,9 +471,8 @@ export default function ClassicTemplate({
             Powered by{" "}
             <a
               href="/"
-              className={primary}
+              className={`font-medium ${primary}`}
               style={{ color: primary }}
-              className="font-medium"
             >
               OnePlace
             </a>

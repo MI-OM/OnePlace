@@ -81,6 +81,7 @@ export default async function BusinessSettingsPage({
           websiteTemplate: business.website_template ?? "classic",
           websitePrimaryColor: business.website_primary_color ?? "#123c3a",
           websiteAccentColor: business.website_accent_color ?? "#e7a83b",
+          foundedYear: business.founded_year ?? null,
         }}
         hours={(hours ?? []).map((h) => ({
           day: h.day_of_week,
