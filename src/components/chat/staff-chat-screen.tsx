@@ -108,6 +108,21 @@ export function StaffChatScreen({
     return () => clearInterval(interval);
   }, [checkPendingCalls]);
 
+  // Notification beep — plays a quick 800Hz tone when a new message arrives
+  const playBeep = useCallback(() => {
+    if (!window.AudioContext) return;
+    const context = new window.AudioContext();
+    const osc = context.createOscillator();
+    const gain = context.createGain();
+    osc.connect(gain);
+    gain.connect(context.destination);
+    osc.frequency.value = 800;
+    gain.gain.value = 0.3;
+    gain.gain.exponentialRampToValueAtTime(0.01, context.currentTime + 0.1);
+    osc.start();
+    osc.stop(context.currentTime + 0.1);
+  }, []);
+
   // Listen for realtime notifications of voice call requests
   useEffect(() => {
     const supabase = createClient();
@@ -162,6 +177,9 @@ export function StaffChatScreen({
               inserted,
             ];
           });
+
+          // Play notification beep for new customer message
+          playBeep();
 
           // If a voice-related system message arrived, re-check pending calls
           if (

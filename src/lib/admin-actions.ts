@@ -280,3 +280,39 @@ export async function updateBusinessContent(
     return { ok: false, error: String(e) };
   }
 }
+
+export async function promoteToBusinessOwner(
+  businessId: string,
+  userId: string,
+): Promise<{ ok: boolean; error?: string }> {
+  try {
+    await requireAdmin();
+    const service = createServiceClient();
+
+    // Check not already a member
+    const { data: existing } = await service
+      .from("business_members")
+      .select("id")
+      .eq("business_id", businessId)
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (existing) {
+      return { ok: false, error: "This user is already a team member of this business." };
+    }
+
+    // Insert as owner
+    const { error } = await service.from("business_members").insert({
+      business_id: businessId,
+      user_id: userId,
+      role: "owner",
+      status: "active",
+    });
+
+    if (error) return { ok: false, error: error.message };
+    revalidatePath(`/admin/businesses/${businessId}/team`);
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: String(e) };
+  }
+}

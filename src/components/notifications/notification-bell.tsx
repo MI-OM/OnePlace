@@ -137,6 +137,12 @@ export function NotificationBell() {
       const businessId = n.data.businessId as string | undefined;
       if (businessId) return `/dashboard/${businessId}`;
     }
+    if (n.type === "new_message" || n.type === "voice_call_request") {
+      const businessId = n.data.businessId as string | undefined;
+      const conversationId = n.data.conversationId as string | undefined;
+      if (businessId && conversationId) return `/conversations/${conversationId}`;
+      if (businessId) return `/dashboard/${businessId}`;
+    }
     return null;
   };
 

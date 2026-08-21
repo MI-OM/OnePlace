@@ -18,7 +18,7 @@ export async function createNotification(params: {
     body: params.body,
     data: params.data ?? {},
   });
-}
+};
 
 /**
  * Notifies business members when a request status changes.
@@ -58,7 +58,7 @@ export async function notifyRequestStatusChange(params: {
       data: { requestId: params.requestId, businessId: params.businessId },
     });
   }
-}
+};
 
 /**
  * Notifies a customer when their request status changes.
@@ -85,7 +85,7 @@ export async function notifyCustomerRequestUpdate(params: {
     body: `Your ${params.requestType} request ${statusLabel}.`,
     data: { requestId: params.requestId },
   });
-}
+};
 
 /**
  * Notifies business members when a human handoff is requested.
@@ -109,6 +109,60 @@ export async function notifyHumanHandoff(params: {
       type: "human_handoff",
       title: "Customer wants to talk",
       body: `${params.customerName} is requesting to speak with a team member.`,
+      data: { conversationId: params.conversationId, businessId: params.businessId },
+    });
+  }
+}
+
+/**
+ * Notifies business members when a new message arrives in a conversation.
+ */
+export async function notifyNewMessage(params: {
+  businessId: string;
+  conversationId: string;
+  customerName: string;
+}): Promise<void> {
+  const service = createServiceClient();
+
+  const { data: members } = await service
+    .from("business_members")
+    .select("user_id")
+    .eq("business_id", params.businessId)
+    .eq("status", "active");
+
+  for (const member of members ?? []) {
+    await createNotification({
+      userId: member.user_id,
+      type: "new_message",
+      title: "New message",
+      body: `${params.customerName} sent a new message.`,
+      data: { conversationId: params.conversationId, businessId: params.businessId },
+    });
+  }
+};
+
+/**
+ * Notifies business members when an incoming voice call is received.
+ */
+export async function notifyVoiceCall(params: {
+  businessId: string;
+  conversationId: string;
+  customerName: string;
+}): Promise<void> {
+  const service = createServiceClient();
+
+  const { data: members } = await service
+    .from("business_members")
+    .select("user_id")
+    .eq("business_id", params.businessId)
+    .eq("status", "active");
+
+  for (const member of members ?? []) {
+    await createNotification({
+      userId: member.user_id,
+      type: "voice_call_request",
+      title: "Incoming voice call",
+      body: `${params.customerName} is calling.`,
       data: { conversationId: params.conversationId, businessId: params.businessId },
     });
   }

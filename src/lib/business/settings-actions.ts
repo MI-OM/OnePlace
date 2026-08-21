@@ -363,29 +363,59 @@ export async function updateBusinessProducts(
     if (error) return { ok: false, error: error.message };
 
     if (parsed.products.length > 0) {
-      const { error: upsertError } = await service
-        .from("business_products")
-        .upsert(
-          parsed.products.map((p) => ({
-            id: p.id,
-            business_id: businessId,
-            name: p.name,
-            description: p.description,
-            price: p.price,
-            price_type: p.priceType,
-            min_price: p.minPrice,
-            max_price: p.maxPrice,
-            currency: p.currency,
-            image_url: p.imageUrl,
-            url: p.url,
-            product_type: p.productType,
-            sort_order: p.sortOrder,
-            is_active: p.isActive,
-          })),
-          { onConflict: "id" }
-        );
+      // Separate products with existing IDs (upsert) from new products (insert)
+      const productsWithId = parsed.products.filter((p) => p.id !== undefined && p.id !== null);
+      const productsNew = parsed.products.filter((p) => p.id === undefined || p.id === null);
 
-      if (upsertError) return { ok: false, error: upsertError.message };
+      // Upsert products that already have IDs
+      if (productsWithId.length > 0) {
+        const { error: upsertError } = await service
+          .from("business_products")
+          .upsert(
+            productsWithId.map((p) => ({
+              id: p.id,
+              business_id: businessId,
+              name: p.name,
+              description: p.description,
+              price: p.price,
+              price_type: p.priceType,
+              min_price: p.minPrice,
+              max_price: p.maxPrice,
+              currency: p.currency,
+              image_url: p.imageUrl,
+              url: p.url,
+              product_type: p.productType,
+              sort_order: p.sortOrder,
+              is_active: p.isActive,
+            })),
+            { onConflict: "id" }
+          );
+        if (upsertError) return { ok: false, error: upsertError.message };
+      }
+
+      // Insert new products (let DB generate UUID via DEFAULT gen_random_uuid)
+      if (productsNew.length > 0) {
+        const { error: insertError } = await service
+          .from("business_products")
+          .insert(
+            productsNew.map((p) => ({
+              business_id: businessId,
+              name: p.name,
+              description: p.description,
+              price: p.price,
+              price_type: p.priceType,
+              min_price: p.minPrice,
+              max_price: p.maxPrice,
+              currency: p.currency,
+              image_url: p.imageUrl,
+              url: p.url,
+              product_type: p.productType,
+              sort_order: p.sortOrder,
+              is_active: p.isActive,
+            }))
+          );
+        if (insertError) return { ok: false, error: insertError.message };
+      }
     }
 
     revalidatePath(`/dashboard/${businessId}/settings`);
