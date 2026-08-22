@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useTransition } from "react";
-import { Check, Ban, Shield, ShieldOff, Star, Megaphone, Pencil } from "lucide-react";
+import { useState, useTransition } from "react";
+import { Check, Ban, Shield, ShieldOff, Star, Megaphone, Pencil, UserPlus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -10,6 +10,7 @@ import {
   updateVerificationStatus,
   toggleFeatured,
   toggleSponsored,
+  promoteToBusinessOwner,
 } from "@/lib/admin-actions";
 import type { AdminBusiness } from "@/lib/admin";
 
@@ -34,6 +35,24 @@ export function BusinessTable({
 
 function BusinessRow({ business }: { business: AdminBusiness }) {
   const [pending, startTransition] = useTransition();
+  const [promoteOpen, setPromoteOpen] = useState(false);
+  const [promoteEmail, setPromoteEmail] = useState("");
+  const [promoteError, setPromoteError] = useState<string | null>(null);
+  const [promoting, setPromoting] = useState(false);
+
+  async function handlePromote() {
+    if (!promoteEmail.trim()) return;
+    setPromoting(true);
+    setPromoteError(null);
+    const result = await promoteToBusinessOwner(business.id, promoteEmail.trim());
+    if (result.ok) {
+      setPromoteOpen(false);
+      startTransition(() => {});
+    } else {
+      setPromoteError(result.error ?? "Failed to assign owner.");
+    }
+    setPromoting(false);
+  }
 
   const statusColor =
     business.status === "active"
@@ -183,8 +202,60 @@ function BusinessRow({ business }: { business: AdminBusiness }) {
             <Megaphone className="mr-1 size-3" aria-hidden />
             {business.isSponsored ? "Sponsored" : "Sponsor"}
           </Button>
+
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={pending || promoting}
+            onClick={() => {
+              setPromoteOpen(true);
+              setPromoteEmail("");
+              setPromoteError(null);
+            }}
+          >
+            <UserPlus className="mr-1 size-3" aria-hidden />
+            Make Owner
+          </Button>
         </div>
       </div>
+
+      {promoteOpen && (
+        <div className="mt-3 rounded-lg border border-border bg-muted/50 p-3">
+          <p className="mb-2 text-sm font-medium">Assign business owner</p>
+          <input
+            type="text"
+            value={promoteEmail}
+            onChange={(e) => setPromoteEmail(e.target.value)}
+            placeholder="Enter email or user ID"
+            className="w-full rounded-md border border-border bg-background px-3 py-1.5 text-sm"
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && promoteEmail.trim()) {
+                handlePromote();
+              }
+              if (e.key === "Escape") setPromoteOpen(false);
+            }}
+          />
+          {promoteError && (
+            <p className="mt-1 text-xs text-destructive">{promoteError}</p>
+          )}
+          <div className="mt-2 flex gap-2">
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setPromoteOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              disabled={!promoteEmail.trim() || promoting}
+              onClick={handlePromote}
+            >
+              {promoting ? "Assigning…" : "Assign Owner"}
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

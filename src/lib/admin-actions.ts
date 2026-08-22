@@ -283,11 +283,25 @@ export async function updateBusinessContent(
 
 export async function promoteToBusinessOwner(
   businessId: string,
-  userId: string,
+  emailOrUserId: string,
 ): Promise<{ ok: boolean; error?: string }> {
   try {
     await requireAdmin();
     const service = createServiceClient();
+
+    let userId = emailOrUserId;
+
+    // If it looks like an email, resolve to user ID
+    if (emailOrUserId.includes("@")) {
+      const { data: authUsers, error: listErr } =
+        await service.auth.admin.listUsers({ perPage: 1000, page: 1 });
+      if (listErr) return { ok: false, error: listErr.message };
+      const found = (authUsers?.users ?? []).find(
+        (u) => u.email?.toLowerCase() === emailOrUserId.toLowerCase(),
+      );
+      if (!found) return { ok: false, error: `No user found with email ${emailOrUserId}` };
+      userId = found.id;
+    }
 
     // Check not already a member
     const { data: existing } = await service
@@ -301,6 +315,16 @@ export async function promoteToBusinessOwner(
       return { ok: false, error: "This user is already a team member of this business." };
     }
 
+    // Ensure profiles row exists
+    const { data: profile } = await service
+      .from("profiles")
+      .select("id")
+      .eq("id", userId)
+      .maybeSingle();
+    if (!profile) {
+      await service.from("profiles").insert({ id: userId, display_name: "Team Member" });
+    }
+
     // Insert as owner
     const { error } = await service.from("business_members").insert({
       business_id: businessId,
@@ -311,6 +335,7 @@ export async function promoteToBusinessOwner(
 
     if (error) return { ok: false, error: error.message };
     revalidatePath(`/admin/businesses/${businessId}/team`);
+    revalidatePath("/admin/businesses");
     return { ok: true };
   } catch (e) {
     return { ok: false, error: String(e) };

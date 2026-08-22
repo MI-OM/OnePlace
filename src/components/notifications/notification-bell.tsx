@@ -139,7 +139,8 @@ export function NotificationBell() {
     }
     if (n.type === "new_message" || n.type === "voice_call_request") {
       const businessId = n.data.businessId as string | undefined;
-      const conversationId = n.data.conversationId as string | undefined;
+      // Handle both conversation_id (snake_case) and conversationId (camelCase)
+      const conversationId = (n.data as any)?.conversationId || (n.data as any)?.conversation_id as string | undefined;
       if (businessId && conversationId) return `/conversations/${conversationId}`;
       if (businessId) return `/dashboard/${businessId}`;
     }
