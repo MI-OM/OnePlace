@@ -1,5 +1,6 @@
 import { classifyIntent, interpretQuery } from "@/lib/search/interpret";
 import { rewriteSearchQuery } from "@/lib/search/llm-rewrite";
+import { embedQuery } from "@/lib/search/embeddings";
 import { createAnonClient } from "@/lib/supabase/anon";
 
 export type BusinessSummary = {
@@ -50,9 +51,11 @@ type BusinessRow = {
   logo_url: string | null;
   cover_image_url: string | null;
   is_sponsored: boolean | null;
+  relevance: number | null;
 };
 
 const RPC = "list_businesses";
+const HYBRID_RPC = "hybrid_search";
 
 function toSummary(row: BusinessRow): BusinessSummary {
   return {
@@ -105,21 +108,6 @@ async function findCategoriesByHint(
   return data.map((c) => c.id);
 }
 
-/**
- * Run an RPC search and return the rows (mapped to BusinessSummary) or an
- * empty array on error.
- */
-async function rpcSearch(
-  supabase: ReturnType<typeof createAnonClient>,
-  params: { category_id?: string; search_query?: string; max_results: number },
-): Promise<BusinessRow[]> {
-  const { data, error } = await supabase.rpc(RPC, params);
-  if (error) {
-    throw new Error(`Couldn't search businesses: ${error.message}`);
-  }
-  return (data ?? []) as BusinessRow[];
-}
-
 export async function searchBusinesses(
   query: string,
   maxResults = 30,
@@ -127,114 +115,56 @@ export async function searchBusinesses(
   const supabase = createAnonClient();
 
   // ── 1. Intent classification ──────────────────────────────────────────
-  // When the query matches a known service pattern (e.g. "clean my house"
-  // → "clean"), we get both canonical search terms and a categoryHint
-  // (e.g. "house cleaning") that maps to the real DB category name.
   const intent = classifyIntent(query);
-
-  // 2. Deterministic interpretation: strip filler/stop-words, OR-semantics.
   const interpreted = interpretQuery(query);
 
-  // ── 2. Category-first retrieval (Google-style) ────────────────────────
-  // If intent identified a category hint, look up matching category IDs
-  // and search with category_id. This prevents ILIKE false positives:
-  // "Cleanse" in a spa service description will never surface for a
-  // "clean my house" query because Rosewater Day Spa isn't in the
-  // "House Cleaning" category.
+  // ── 2. Generate query embedding for vector search ─────────────────────
+  const searchTerms = intent.terms.length > 0
+    ? intent.terms.join(" ")
+    : interpreted || query.trim();
+  const queryEmbedding = await embedQuery(searchTerms);
+
+  // ── 3. Category-first hybrid search ───────────────────────────────────
+  // If intent identified a category, search within that category first.
   if (intent.categoryHint) {
     const categoryIds = await findCategoriesByHint(intent.categoryHint);
-    const searchTerms = intent.terms.join(" ");
 
     for (const categoryId of categoryIds) {
-      const rows = await rpcSearch(supabase, {
+      const { data, error } = await supabase.rpc(HYBRID_RPC, {
+        query_text: searchTerms || undefined,
+        query_embedding: queryEmbedding ? JSON.stringify(queryEmbedding) : null,
+        match_count: maxResults,
         category_id: categoryId,
-        search_query: searchTerms || undefined,
-        max_results: maxResults,
       });
-      if (rows.length > 0) {
-        return rows.map(toSummary);
+      if (!error && data && data.length > 0) {
+        return (data as BusinessRow[]).map(toSummary);
       }
     }
   }
 
-  // ── 3. Dynamic category fallback (admin-added categories) ─────────────
-  // When no hardcoded categoryHint matched, try to discover categories
-  // dynamically using the interpreted content words. This ensures new
-  // categories added by admins (e.g. "Pet Grooming") are automatically
-  // discoverable without code changes.
-  const interpretedTerms = interpreted
-    .split(/\s+/)
-    .filter((t) => t.length >= 3);
+  // ── 4. Full hybrid search (no category filter) ────────────────────────
+  const { data: hybridResults, error: hybridError } = await supabase.rpc(HYBRID_RPC, {
+    query_text: searchTerms || undefined,
+    query_embedding: queryEmbedding ? JSON.stringify(queryEmbedding) : null,
+    match_count: maxResults,
+  });
 
-  if (interpretedTerms.length > 0) {
-    const supabase2 = createAnonClient();
-    const { data: dynamicCategories } = await supabase2
-      .from("categories")
-      .select("id, name")
-      .eq("is_active", true);
-
-    if (dynamicCategories && dynamicCategories.length > 0) {
-      // Score each category by how many interpreted terms appear in its name.
-      const scored = dynamicCategories
-        .map((cat) => {
-          const nameLower = cat.name.toLowerCase();
-          const score = interpretedTerms.filter((t) =>
-            nameLower.includes(t),
-          ).length;
-          return { id: cat.id, score };
-        })
-        .filter((c) => c.score > 0)
-        .sort((a, b) => b.score - a.score);
-
-      for (const { id: categoryId } of scored) {
-        const rows = await rpcSearch(supabase, {
-          category_id: categoryId,
-          search_query: interpretedTerms.join(" "),
-          max_results: maxResults,
-        });
-        if (rows.length > 0) {
-          return rows.map(toSummary);
-        }
-      }
-    }
+  if (!hybridError && hybridResults && hybridResults.length > 0) {
+    return (hybridResults as BusinessRow[]).map(toSummary);
   }
 
-  // ── 4. Text-only fallback ─────────────────────────────────────────────
-  // No category matched (or no categoryHint). Fall back to text search
-  // with the canonical terms or interpreted content words.
-  const candidateQueries: string[] = [];
-  if (intent.terms.length > 0) {
-    candidateQueries.push(intent.terms.join(" "));
-  } else {
-    if (interpreted && interpreted !== query.trim()) {
-      candidateQueries.push(interpreted);
-    }
-    if (query.trim().length > 0 && !candidateQueries.includes(query.trim())) {
-      candidateQueries.push(query.trim());
-    }
-  }
-
-  for (const searchQuery of candidateQueries) {
-    const rows = await rpcSearch(supabase, {
-      search_query: searchQuery,
-      max_results: maxResults,
-    });
-    if (rows.length > 0) {
-      return rows.map(toSummary);
-    }
-  }
-
-  // ── 5. LLM rewrite (last resort) ─────────────────────────────────────
-  // Cached per normalized query. Only called when local interpretation
-  // yielded zero results (Doc 05 §66).
+  // ── 5. LLM rewrite fallback (last resort) ─────────────────────────────
+  // Only when hybrid search returned nothing.
   const rewritten = await rewriteSearchQuery(query);
   if (rewritten && rewritten.trim().length > 0) {
-    const rows = await rpcSearch(supabase, {
-      search_query: rewritten.trim(),
-      max_results: maxResults,
+    const rewrittenEmbedding = await embedQuery(rewritten);
+    const { data: llmResults, error: llmError } = await supabase.rpc(HYBRID_RPC, {
+      query_text: rewritten.trim(),
+      query_embedding: rewrittenEmbedding ? JSON.stringify(rewrittenEmbedding) : null,
+      match_count: maxResults,
     });
-    if (rows.length > 0) {
-      return rows.map(toSummary);
+    if (!llmError && llmResults && llmResults.length > 0) {
+      return (llmResults as BusinessRow[]).map(toSummary);
     }
   }
 

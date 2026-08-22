@@ -15,7 +15,7 @@ type Business = {
   phone: string | null;
   email: string | null;
   website_url: string | null;
-  address_line1: string | null;
+  address_line_1: string | null;
   city: string | null;
   province: string | null;
   postal_code: string | null;
@@ -33,7 +33,7 @@ export function BusinessContentEditor({ business }: { business: Business }) {
   const [phone, setPhone] = useState(business.phone ?? "");
   const [email, setEmail] = useState(business.email ?? "");
   const [websiteUrl, setWebsiteUrl] = useState(business.website_url ?? "");
-  const [addressLine1, setAddressLine1] = useState(business.address_line1 ?? "");
+  const [addressLine1, setAddressLine1] = useState(business.address_line_1 ?? "");
   const [city, setCity] = useState(business.city ?? "");
   const [province, setProvince] = useState(business.province ?? "");
   const [postalCode, setPostalCode] = useState(business.postal_code ?? "");

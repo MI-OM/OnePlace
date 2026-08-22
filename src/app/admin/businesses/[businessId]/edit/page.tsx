@@ -21,11 +21,15 @@ export default async function AdminEditBusinessPage({
   const { businessId } = await params;
   const service = createServiceClient();
 
-  const { data: business } = await service
+  const { data: business, error } = await service
     .from("businesses")
-    .select("id, name, description, phone, email, website_url, address_line1, city, province, postal_code, country, timezone, founded_year")
+    .select("id, name, description, phone, email, website_url, address_line_1, city, province, postal_code, country, timezone, founded_year")
     .eq("id", businessId)
     .maybeSingle();
+
+  if (error) {
+    console.error("Failed to load business for admin edit:", error.message);
+  }
 
   if (!business) notFound();
 

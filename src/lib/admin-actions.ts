@@ -3,6 +3,7 @@
 import { createServiceClient } from "@/lib/supabase/service";
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { embedBusiness } from "@/lib/search/embeddings";
 
 async function requireAdmin() {
   const supabase = await createClient();
@@ -273,6 +274,8 @@ export async function updateBusinessContent(
       .eq("id", businessId);
 
     if (error) return { ok: false, error: error.message };
+    // Re-embed in background
+    embedBusiness(businessId).catch(() => {});
     revalidatePath("/admin/businesses");
     revalidatePath(`/admin/businesses/${businessId}/edit`);
     return { ok: true };

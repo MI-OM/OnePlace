@@ -4,6 +4,7 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { revalidatePath } from "next/cache";
+import { embedBusiness } from "@/lib/search/embeddings";
 
 const updateProfileSchema = z.object({
   name: z.string().min(2, "Business name required"),
@@ -99,6 +100,9 @@ export async function updateBusinessProfile(
       .eq("id", businessId);
 
     if (error) return { ok: false, error: error.message };
+
+    // Re-embed in background (non-blocking) so search index stays fresh
+    embedBusiness(businessId).catch(() => {});
 
     revalidatePath(`/dashboard/${businessId}`);
     revalidatePath(`/dashboard/${businessId}/settings`);
@@ -417,6 +421,9 @@ export async function updateBusinessProducts(
         if (insertError) return { ok: false, error: insertError.message };
       }
     }
+
+    // Re-embed in background (products feed into the search embedding)
+    embedBusiness(businessId).catch(() => {});
 
     revalidatePath(`/dashboard/${businessId}/settings`);
     revalidatePath(`/site/${businessId}`);
