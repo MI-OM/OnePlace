@@ -20,6 +20,7 @@ export type BusinessSummary = {
   logoUrl: string | null;
   coverImageUrl: string | null;
   isSponsored?: boolean;
+  relevance?: number | null;
 };
 
 export type Category = {
@@ -56,6 +57,7 @@ type BusinessRow = {
 
 const RPC = "list_businesses";
 const HYBRID_RPC = "hybrid_search";
+const DEFAULT_MIN_RELEVANCE = 0.02;
 
 function toSummary(row: BusinessRow): BusinessSummary {
   return {
@@ -74,6 +76,7 @@ function toSummary(row: BusinessRow): BusinessSummary {
     logoUrl: row.logo_url,
     coverImageUrl: row.cover_image_url,
     isSponsored: row.is_sponsored ?? false,
+    relevance: row.relevance,
   };
 }
 
@@ -135,6 +138,7 @@ export async function searchBusinesses(
         query_embedding: queryEmbedding ? JSON.stringify(queryEmbedding) : null,
         match_count: maxResults,
         category_id: categoryId,
+        min_relevance: DEFAULT_MIN_RELEVANCE,
       });
       if (!error && data && data.length > 0) {
         return (data as BusinessRow[]).map(toSummary);
@@ -147,6 +151,7 @@ export async function searchBusinesses(
     query_text: searchTerms || undefined,
     query_embedding: queryEmbedding ? JSON.stringify(queryEmbedding) : null,
     match_count: maxResults,
+    min_relevance: DEFAULT_MIN_RELEVANCE,
   });
 
   if (!hybridError && hybridResults && hybridResults.length > 0) {
@@ -162,6 +167,7 @@ export async function searchBusinesses(
       query_text: rewritten.trim(),
       query_embedding: rewrittenEmbedding ? JSON.stringify(rewrittenEmbedding) : null,
       match_count: maxResults,
+      min_relevance: DEFAULT_MIN_RELEVANCE,
     });
     if (!llmError && llmResults && llmResults.length > 0) {
       return (llmResults as BusinessRow[]).map(toSummary);

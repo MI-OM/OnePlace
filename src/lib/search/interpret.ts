@@ -34,6 +34,7 @@ const STOP_WORDS = new Set(
     my your your mine yours our theirs theirs his hers its
     done finishing ready available booked appointment appointments schedule scheduling
     can could should would will would like would love
+    off up down out about above after before between through during
   `
     .trim()
     .split(/\s+/)
@@ -54,6 +55,7 @@ function cleanToken(token: string): string {
 // Synonym expansion — maps common customer terms to canonical DB terms
 // ---------------------------------------------------------------------------
 const SYNONYMS: Record<string, string[]> = {
+  // Hair & beauty
   hairdresser: ["hair", "salon"],
   stylist: ["hair", "salon"],
   "hair stylist": ["hair", "salon"],
@@ -86,6 +88,7 @@ const SYNONYMS: Record<string, string[]> = {
   sauna: ["spa"],
   wrap: ["spa"],
   peel: ["spa"],
+  // Cleaning & repair
   housekeeper: ["clean", "cleaning"],
   maid: ["clean", "cleaning"],
   janitor: ["clean", "cleaning"],
@@ -98,6 +101,7 @@ const SYNONYMS: Record<string, string[]> = {
   carpenter: ["repair"],
   painter: ["repair"],
   roofer: ["repair"],
+  // Fitness & events
   trainer: ["fitness"],
   gym: ["fitness"],
   workout: ["fitness"],
@@ -107,29 +111,82 @@ const SYNONYMS: Record<string, string[]> = {
   caterer: ["planner", "event"],
   catering: ["planner", "event"],
   venue: ["planner", "event"],
+  // Health & wellness
   chiropractor: ["wellness"],
   physio: ["wellness"],
   therapist: ["wellness"],
   counseling: ["wellness"],
   counselor: ["wellness"],
+  // Pets
   vet: ["veterinary", "pet"],
   veterinarian: ["veterinary", "pet"],
   "pet groomer": ["pet", "grooming"],
   grooming: ["pet", "grooming"],
+  // Food & drink
   bakery: ["bakery", "food"],
   coffee: ["cafe", "coffee"],
   cafe: ["cafe", "coffee"],
   restaurant: ["restaurant", "food"],
+  // Transport
   taxi: ["transport", "taxi"],
   uber: ["transport", "taxi"],
+  // Photo & education
   photography: ["photography", "photo"],
   photographer: ["photography", "photo"],
   tutoring: ["tutoring", "education"],
   tutor: ["tutoring", "education"],
+  // Legal & accounting
   lawyer: ["legal"],
   attorney: ["legal"],
   accountant: ["accounting"],
   bookkeeper: ["accounting"],
+  // Community services & housing
+  accommodation: ["housing", "shelter", "supportive housing"],
+  shelter: ["housing", "accommodation", "community services", "supportive housing"],
+  homeless: ["shelter", "housing", "community services", "supportive housing"],
+  housing: ["shelter", "accommodation", "supportive housing"],
+  lodging: ["housing", "accommodation"],
+  "food bank": ["food bank", "community services", "food"],
+  foodbank: ["food bank", "community services", "food"],
+  eviction: ["housing", "community services", "supportive housing"],
+  // Automotive
+  mechanic: ["automotive", "car repair"],
+  auto: ["automotive", "car repair"],
+  automotive: ["automotive", "car repair"],
+  "car repair": ["automotive", "car repair"],
+  oil: ["automotive"],
+  tire: ["automotive"],
+  // Real estate
+  realtor: ["real estate", "property"],
+  "real estate": ["real estate", "property"],
+  apartment: ["real estate", "property"],
+  rent: ["real estate", "property"],
+  mortgage: ["real estate", "property"],
+  // Childcare & senior care
+  babysitter: ["childcare", "child"],
+  daycare: ["childcare", "child"],
+  childcare: ["childcare", "child"],
+  children: ["childcare", "child"],
+  elderly: ["senior care", "elderly"],
+  senior: ["senior care", "elderly"],
+  nursing: ["senior care", "health"],
+  // IT & tech
+  computer: ["tech", "IT"],
+  laptop: ["tech", "IT"],
+  "it support": ["tech", "IT"],
+  website: ["tech", "IT"],
+  software: ["tech", "IT"],
+  // Moving
+  mover: ["moving", "relocation"],
+  moving: ["moving", "relocation"],
+  relocation: ["moving", "relocation"],
+  // Music & arts
+  "music lessons": ["music", "arts"],
+  piano: ["music", "arts"],
+  guitar: ["music", "arts"],
+  art: ["art", "arts"],
+  painting: ["art", "arts"],
+  craft: ["art", "arts"],
 };
 
 /**
@@ -221,7 +278,9 @@ export type Intent = {
  * We filter by category first, then fall back to text search.
  */
 const INTENT_PATTERNS: ReadonlyArray<{ test: RegExp; terms: string[]; categoryHint?: string }> = [
-  // Body-part / beauty services first
+  // ── Community services & housing (check FIRST — highest urgency queries) ──
+  { test: /\b(accommodation|shelter|homeless|housing|lodging|eviction|food\s*bank|foodbank|soup\s*kitchen|community\s*meals|supportive|social\s*services|outreach|charity|nonprofit|non-profit|donation|volunteer)\b/i, terms: ["community services", "shelter", "housing"], categoryHint: "community" },
+  // Body-part / beauty services
   { test: /\b(manucure|manicure|nail\s*(polish|fails|art|tech)|\bnail\b|gel\s+nail)\b/i, terms: ["nails"], categoryHint: "nail" },
   { test: /\b(hair|hairs|haircut|hairstylist|hairdresser|hairoist|bob|balayage|highlights|highlight|color|colour|cut|trim|fades|fade|taper|undercut|buzz)\b/i, terms: ["hair"], categoryHint: "hair" },
   { test: /\b(barber)\b/i, terms: ["barber"], categoryHint: "barber" },
@@ -233,8 +292,7 @@ const INTENT_PATTERNS: ReadonlyArray<{ test: RegExp; terms: string[]; categoryHi
   { test: /\b(gym|fitness|workout|trainer|personal\s*trainer|weights|cardio|treadmill|recreation)\b/i, terms: ["fitness"], categoryHint: "fitness" },
   { test: /\b(wedding|marriage|engagement|anniversary|birthday|party|event|cebration|cater(?:ing|er)?|reception|venue|dj|entertainment|planner|planning)\b/i, terms: ["planner", "planning", "event", "wedding", "catering"] },
   { test: /\b(health|nutrition|diet|physical\s*therapy|chiropractor|osteopath)\b/i, terms: ["wellness"], categoryHint: "health" },
-  // Auto-generated patterns from seed data categories — add new patterns
-  // when new categories are seeded. These are cheap regex checks.
+  // Auto-generated patterns from seed data categories
   { test: /\b(pet|dog|cat|animal|groom(?:ing)?)\b/i, terms: ["pet", "grooming"], categoryHint: "pet" },
   { test: /\b(photo|photograph|camera|portrait|headshot)\b/i, terms: ["photography", "photo"], categoryHint: "photo" },
   { test: /\b(tutor|teach|lesson|learn|education|school)\b/i, terms: ["tutoring", "education"], categoryHint: "tutor" },
@@ -244,6 +302,15 @@ const INTENT_PATTERNS: ReadonlyArray<{ test: RegExp; terms: string[]; categoryHi
   { test: /\b(lawyer|attorney|legal|solicitor|notary)\b/i, terms: ["legal"], categoryHint: "legal" },
   { test: /\b(account(?:ant|ing)|bookkeep|tax|financ)\b/i, terms: ["accounting"], categoryHint: "account" },
   { test: /\b(transport|taxi|shuttle|ride|car\s*service)\b/i, terms: ["transport", "taxi"], categoryHint: "transport" },
+  // Additional categories — covers future businesses
+  { test: /\b(mechanic|auto|automotive|car\s*repair|oil\s*change|tire|brake|engine|transmission)\b/i, terms: ["automotive", "car repair"], categoryHint: "auto" },
+  { test: /\b(realtor|real\s*estate|apartment|rent|mortgage|property|house\s*for\s*sale|condo)\b/i, terms: ["real estate", "property"], categoryHint: "real estate" },
+  { test: /\b(babysitter|daycare|childcare|child|children|kid|nanny|after\s*school)\b/i, terms: ["childcare", "child"], categoryHint: "child" },
+  { test: /\b(elderly|senior|nursing|retirement|assisted\s*living|aged\s*care)\b/i, terms: ["senior care", "elderly"], categoryHint: "senior" },
+  { test: /\b(computer|laptop|it\s*support|website|software|tech|technology|digital)\b/i, terms: ["tech", "IT"], categoryHint: "tech" },
+  { test: /\b(mover|movers|moving|relocation|storage|shipping)\b/i, terms: ["moving", "relocation"], categoryHint: "moving" },
+  { test: /\b(music|piano|guitar|lesson|sing|singing|drum|violin)\b/i, terms: ["music", "arts"], categoryHint: "music" },
+  { test: /\b(art|painting|craft|pottery|sculpture|gallery)\b/i, terms: ["art", "arts"], categoryHint: "art" },
 ];
 
 /** Returns canonical terms for a single service/category intent, or empty. */

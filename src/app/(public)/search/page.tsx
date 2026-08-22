@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { SearchX } from "lucide-react";
+import { SearchX, AlertTriangle } from "lucide-react";
 import { Suspense } from "react";
 
-import { searchBusinesses, enrichWithDistance } from "@/lib/discovery";
+import { searchBusinesses, enrichWithDistance, getCategories } from "@/lib/discovery";
 import { BusinessCard } from "@/components/discovery/business-card";
 import { SearchBox } from "@/components/discovery/search-box";
 import { LocationButton } from "@/components/discovery/location-button";
@@ -16,6 +16,8 @@ export const metadata: Metadata = {
 };
 
 const SUGGESTIONS = ["massage", "hair", "cleaning", "fitness", "barber"];
+
+const LOW_CONFIDENCE_THRESHOLD = 0.05;
 
 async function SearchResults({
   query,
@@ -32,14 +34,28 @@ async function SearchResults({
     results = await enrichWithDistance(results, lat, lng);
   }
 
+  // Check if results are low confidence (all below threshold but above min)
+  const lowConfidence =
+    results.length > 0 &&
+    results.every((r) => r.relevance != null && r.relevance < LOW_CONFIDENCE_THRESHOLD);
+
   if (results.length === 0) {
+    // Fetch categories for suggestions
+    let categories: { name: string; slug: string }[] = [];
+    try {
+      const allCategories = await getCategories();
+      categories = allCategories.slice(0, 8);
+    } catch {
+      // Ignore — show default suggestions
+    }
+
     return (
       <div className="mt-10 rounded-xl border border-dashed border-border bg-card p-10 text-center">
         <SearchX className="mx-auto size-8 text-muted-foreground" aria-hidden />
-        <h2 className="mt-4 text-lg font-semibold">No businesses matched</h2>
+        <h2 className="mt-4 text-lg font-semibold">No exact matches found</h2>
         <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-          Try a broader term, like &ldquo;cleaning&rdquo; or
-          &ldquo;massage&rdquo;, or explore by category.
+          We couldn&apos;t find businesses matching &ldquo;{query}&rdquo;.
+          Try a different term, or browse by category below.
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           {SUGGESTIONS.map((suggestion) => (
@@ -52,16 +68,45 @@ async function SearchResults({
             </Link>
           ))}
         </div>
+        {categories.length > 0 && (
+          <div className="mt-6">
+            <p className="text-xs font-medium text-muted-foreground mb-2">
+              Or browse by category:
+            </p>
+            <div className="flex flex-wrap justify-center gap-2">
+              {categories.map((cat) => (
+                <Link
+                  key={cat.slug}
+                  href={`/categories/${cat.slug}`}
+                  className="rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-sm text-primary transition-colors hover:bg-primary/10"
+                >
+                  {cat.name}
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     );
   }
 
   return (
-    <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {results.map((business) => (
-        <BusinessCard key={business.id} business={business} />
-      ))}
-    </div>
+    <>
+      {lowConfidence && (
+        <div className="mt-6 flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200">
+          <AlertTriangle className="size-4 shrink-0" aria-hidden />
+          <span>
+            These results may not be exact matches. Try refining your search or
+            browse categories for better results.
+          </span>
+        </div>
+      )}
+      <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {results.map((business) => (
+          <BusinessCard key={business.id} business={business} />
+        ))}
+      </div>
+    </>
   );
 }
 
