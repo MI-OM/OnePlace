@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { SearchX, AlertTriangle } from "lucide-react";
+import { SearchX } from "lucide-react";
 import { Suspense } from "react";
 
 import { searchBusinesses, enrichWithDistance, getCategories } from "@/lib/discovery";
@@ -17,8 +17,6 @@ export const metadata: Metadata = {
 
 const SUGGESTIONS = ["massage", "hair", "cleaning", "fitness", "barber"];
 
-const LOW_CONFIDENCE_THRESHOLD = 0.05;
-
 async function SearchResults({
   query,
   lat,
@@ -34,13 +32,7 @@ async function SearchResults({
     results = await enrichWithDistance(results, lat, lng);
   }
 
-  // Check if results are low confidence (all below threshold but above min)
-  const lowConfidence =
-    results.length > 0 &&
-    results.every((r) => r.relevance != null && r.relevance < LOW_CONFIDENCE_THRESHOLD);
-
   if (results.length === 0) {
-    // Fetch categories for suggestions
     let categories: { name: string; slug: string }[] = [];
     try {
       const allCategories = await getCategories();
@@ -91,22 +83,11 @@ async function SearchResults({
   }
 
   return (
-    <>
-      {lowConfidence && (
-        <div className="mt-6 flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200">
-          <AlertTriangle className="size-4 shrink-0" aria-hidden />
-          <span>
-            These results may not be exact matches. Try refining your search or
-            browse categories for better results.
-          </span>
-        </div>
-      )}
-      <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {results.map((business) => (
-          <BusinessCard key={business.id} business={business} />
-        ))}
-      </div>
-    </>
+    <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {results.map((business) => (
+        <BusinessCard key={business.id} business={business} />
+      ))}
+    </div>
   );
 }
 

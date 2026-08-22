@@ -57,7 +57,7 @@ type BusinessRow = {
 
 const RPC = "list_businesses";
 const HYBRID_RPC = "hybrid_search";
-const DEFAULT_MIN_RELEVANCE = 0.02;
+const DEFAULT_MIN_RELEVANCE = 0;
 
 function toSummary(row: BusinessRow): BusinessSummary {
   return {

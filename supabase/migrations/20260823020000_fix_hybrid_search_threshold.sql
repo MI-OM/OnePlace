@@ -15,7 +15,7 @@ create or replace function public.hybrid_search(
   match_count integer default 20,
   category_id uuid default null,
   city_filter text default null,
-  min_relevance real default 0.02
+  min_relevance real default 0
 )
 returns table (
   id uuid,
@@ -241,8 +241,7 @@ as $$
     e.is_sponsored,
     e.rrf_score::real as relevance
   from enriched e
-  -- FIX: filter out garbage results — only return businesses that actually match
-  where e.rrf_score >= min_relevance
+  where e.rrf_score > min_relevance
   order by e.rrf_score desc
   limit match_count;
 $$;
