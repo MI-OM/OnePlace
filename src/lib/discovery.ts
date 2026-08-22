@@ -1,5 +1,4 @@
-import { classifyIntent, interpretQuery } from "@/lib/search/interpret";
-import { rewriteSearchQuery } from "@/lib/search/llm-rewrite";
+import { classifyIntent, interpretQuery, expandSynonyms, interpretQueryTerms } from "@/lib/search/interpret";
 import { embedQuery } from "@/lib/search/embeddings";
 import { createAnonClient } from "@/lib/supabase/anon";
 
@@ -57,7 +56,6 @@ type BusinessRow = {
 
 const RPC = "list_businesses";
 const HYBRID_RPC = "hybrid_search";
-const DEFAULT_MIN_RELEVANCE = 0;
 
 function toSummary(row: BusinessRow): BusinessSummary {
   return {
@@ -80,101 +78,55 @@ function toSummary(row: BusinessRow): BusinessSummary {
   };
 }
 
+
+
 /**
- * Look up categories whose name matches the ILIKE pattern. Returns matching
- * category IDs ordered by specificity (exact matches first, then partial).
+ * Search businesses using hybrid FTS + vector search.
+ *
+ * Flow: single RPC call. FTS is the gatekeeper (only matched businesses appear).
+ * Vector search boosts ranking for businesses that are also semantically close.
+ * No category-first routing, no LLM fallback, no hardcoded thresholds.
+ *
+ * If FTS finds 0 matches → returns 0 results → "No results found" in UI.
  */
-async function findCategoriesByHint(
-  hint: string,
-): Promise<string[]> {
-  const supabase = createAnonClient();
-  const { data } = await supabase
-    .from("categories")
-    .select("id, name")
-    .eq("is_active", true)
-    .ilike("name", `%${hint}%`);
-
-  if (!data || data.length === 0) return [];
-
-  // Sort: exact word-boundary matches first (e.g. "House Cleaning" beats
-  // "Health & Wellness" when hint is "cleaning"), then by name length (shorter
-  // = more specific).
-  const escaped = hint.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const exactRe = new RegExp(`\\b${escaped}\\b`, "i");
-  data.sort((a, b) => {
-    const aExact = exactRe.test(a.name) ? 0 : 1;
-    const bExact = exactRe.test(b.name) ? 0 : 1;
-    if (aExact !== bExact) return aExact - bExact;
-    return a.name.length - b.name.length;
-  });
-
-  return data.map((c) => c.id);
-}
-
 export async function searchBusinesses(
   query: string,
   maxResults = 30,
 ): Promise<BusinessSummary[]> {
   const supabase = createAnonClient();
 
-  // ── 1. Intent classification ──────────────────────────────────────────
+  // ── 1. Build enriched search terms ────────────────────────────────────
+  // Combine: content terms from the query + synonym expansion.
+  // This gives the FTS the richest possible text to match against.
+  const contentTerms = interpretQueryTerms(query, 6);
   const intent = classifyIntent(query);
-  const interpreted = interpretQuery(query);
+  const allTerms = [...new Set([
+    ...contentTerms,
+    ...expandSynonyms(contentTerms),
+    ...intent.terms,
+  ])];
+  const enrichedQuery = allTerms.length > 0 ? allTerms.join(" ") : query.trim();
 
-  // ── 2. Generate query embedding for vector search ─────────────────────
-  const searchTerms = intent.terms.length > 0
-    ? intent.terms.join(" ")
-    : interpreted || query.trim();
-  const queryEmbedding = await embedQuery(searchTerms);
+  // ── 2. Generate query embedding (optional — boosts ranking when available) ─
+  const queryEmbedding = await embedQuery(enrichedQuery);
 
-  // ── 3. Category-first hybrid search ───────────────────────────────────
-  // If intent identified a category, search within that category first.
-  if (intent.categoryHint) {
-    const categoryIds = await findCategoriesByHint(intent.categoryHint);
-
-    for (const categoryId of categoryIds) {
-      const { data, error } = await supabase.rpc(HYBRID_RPC, {
-        query_text: searchTerms || undefined,
-        query_embedding: queryEmbedding ? JSON.stringify(queryEmbedding) : null,
-        match_count: maxResults,
-        category_id: categoryId,
-        min_relevance: DEFAULT_MIN_RELEVANCE,
-      });
-      if (!error && data && data.length > 0) {
-        return (data as BusinessRow[]).map(toSummary);
-      }
-    }
-  }
-
-  // ── 4. Full hybrid search (no category filter) ────────────────────────
-  const { data: hybridResults, error: hybridError } = await supabase.rpc(HYBRID_RPC, {
-    query_text: searchTerms || undefined,
+  // ── 3. Single hybrid search call ──────────────────────────────────────
+  // FTS finds candidates, vector boosts ranking. No fallback chains.
+  const { data: results, error } = await supabase.rpc(HYBRID_RPC, {
+    query_text: enrichedQuery || undefined,
     query_embedding: queryEmbedding ? JSON.stringify(queryEmbedding) : null,
     match_count: maxResults,
-    min_relevance: DEFAULT_MIN_RELEVANCE,
   });
 
-  if (!hybridError && hybridResults && hybridResults.length > 0) {
-    return (hybridResults as BusinessRow[]).map(toSummary);
-  }
-
-  // ── 5. LLM rewrite fallback (last resort) ─────────────────────────────
-  // Only when hybrid search returned nothing.
-  const rewritten = await rewriteSearchQuery(query);
-  if (rewritten && rewritten.trim().length > 0) {
-    const rewrittenEmbedding = await embedQuery(rewritten);
-    const { data: llmResults, error: llmError } = await supabase.rpc(HYBRID_RPC, {
-      query_text: rewritten.trim(),
-      query_embedding: rewrittenEmbedding ? JSON.stringify(rewrittenEmbedding) : null,
-      match_count: maxResults,
-      min_relevance: DEFAULT_MIN_RELEVANCE,
+  if (error) {
+    console.error("[search] hybrid_search error:", error.message, {
+      query,
+      enrichedQuery,
     });
-    if (!llmError && llmResults && llmResults.length > 0) {
-      return (llmResults as BusinessRow[]).map(toSummary);
-    }
+    return [];
   }
 
-  return [];
+  return (results ?? []).map(toSummary);
 }
 
 export async function listBusinessesInCategory(
