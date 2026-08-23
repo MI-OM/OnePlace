@@ -1,19 +1,18 @@
--- Hybrid search v5: Two-candidate-source RRF with improved FTS.
+-- Hybrid search v6: cosine threshold + field-weighted ranking.
 --
--- DESIGN:
---   FTS and vector are independent candidate sources combined via Reciprocal Rank Fusion.
---   FTS indexes ALL searchable fields: name + description + categories + services + knowledge.
---   Vector provides semantic ranking via cosine distance.
---   NO thresholds. NO min_relevance. No FTS gatekeeper.
---   If FTS finds nothing, vector-only results still appear (and vice versa).
---   Empty query = category browse mode (all active businesses).
---
--- Fixes from previous versions:
---   v1 (20260823010000): FTS only indexed name+description, missed categories/services/knowledge
---   v3 (20260823020000): Added min_relevance threshold that filtered everything out
---   v4 (20260823040000): FTS-as-gatekeeper was too restrictive, 0 results when FTS didn't match
---   v5 (this): Best of both — improved FTS + independent vector source + RRF fusion
---
+-- Fixes from v5:
+--   1. Vector search admitted ALL embedded businesses (no similarity threshold)
+--      → false positives like Salvation Army appearing for "hair" queries.
+--      FIX: cosine distance < 0.7 threshold on vector_results.
+--   2. FTS ranking treated all fields equally — "hair" in a knowledge item
+--      ranked the same as "Hair" in the business name.
+--      FIX: field-weighted scoring — name ×10, category ×5, services ×2,
+--      knowledge ×1, description ×0.5 added to ts_rank.
+--   3. OR semantics with enriched terms (braid | hair | braiding | salon | stylist)
+--      matched half the beauty industry.
+--      FIX: require at least one core term to match in name or category
+--      when query has 2+ terms — prevents noise from expanded/LLM terms.
+
 -- DROP all prior overloads to prevent PostgREST ambiguity errors.
 drop function if exists public.hybrid_search(text, vector(1536), integer, uuid, text, real);
 drop function if exists public.hybrid_search(text, vector(1536), integer, uuid, text);
@@ -89,6 +88,11 @@ as $$
     select coalesce((select token from content_tokens limit 1), '') as term
   ),
 
+  -- Count of content terms (for admission filtering)
+  token_count as (
+    select count(*)::int as cnt from content_tokens
+  ),
+
   -- Pre-load all searchable text per business (avoids repeated lateral joins)
   biz_text as (
     select
@@ -114,9 +118,9 @@ as $$
         from public.business_services bs
         where bs.business_id = b.id and bs.is_active
       ), '') as svc_names,
-      -- Aggregate knowledge item content
+      -- Aggregate knowledge item titles + content
       coalesce((
-        select string_agg(ki.content, ' ')
+        select string_agg(ki.title || ' ' || ki.content, ' ')
         from public.ai_knowledge_items ki
         where ki.business_id = b.id and ki.is_active
       ), '') as knowledge_text
@@ -126,10 +130,10 @@ as $$
   ),
 
   -- ============================================================================
-  -- FTS CANDIDATE SET
+  -- FTS CANDIDATE SET with field-weighted scoring
   -- ============================================================================
-  -- Matches against: name + description + categories + services + knowledge
-  -- Three matching strategies: ILIKE, tsvector OR, trigram
+  -- Matching: ILIKE (first term) + tsvector OR + trigram (typos)
+  -- Ranking: ts_rank + field-weighted boost (name > category > service > knowledge)
   fts_results as (
     select
       biz.id,
@@ -139,7 +143,7 @@ as $$
       biz.logo_url,
       biz.cover_image_url,
       biz.is_sponsored,
-      -- FTS rank (higher = better)
+      -- Base FTS rank
       ts_rank(
         to_tsvector('simple',
           coalesce(biz.name, '') || ' ' ||
@@ -149,23 +153,97 @@ as $$
           coalesce(biz.knowledge_text, '')
         ),
         to_tsquery('simple', (select terms from fts_terms))
+      ) as base_rank,
+      -- Field-weighted boost: name match matters most, knowledge least
+      (
+        (case when biz.name ilike '%' || (select term from fts_first) || '%' then 10.0
+              when to_tsvector('simple', coalesce(biz.name, '')) @@ to_tsquery('simple', (select terms from fts_terms)) then 8.0
+              else 0 end)
+        +
+        (case when biz.cat_names ilike '%' || (select term from fts_first) || '%' then 5.0
+              when to_tsvector('simple', coalesce(biz.cat_names, '')) @@ to_tsquery('simple', (select terms from fts_terms)) then 4.0
+              else 0 end)
+        +
+        (case when biz.svc_names ilike '%' || (select term from fts_first) || '%' then 2.0
+              when to_tsvector('simple', coalesce(biz.svc_names, '')) @@ to_tsquery('simple', (select terms from fts_terms)) then 1.5
+              else 0 end)
+        +
+        (case when biz.knowledge_text ilike '%' || (select term from fts_first) || '%' then 1.0
+              when to_tsvector('simple', coalesce(biz.knowledge_text, '')) @@ to_tsquery('simple', (select terms from fts_terms)) then 0.5
+              else 0 end)
+        +
+        (case when biz.description ilike '%' || (select term from fts_first) || '%' then 0.5
+              else 0 end)
+      ) as field_boost,
+      -- Combined rank = base FTS rank + field boost (higher = better)
+      ts_rank(
+        to_tsvector('simple',
+          coalesce(biz.name, '') || ' ' ||
+          coalesce(biz.description, '') || ' ' ||
+          coalesce(biz.cat_names, '') || ' ' ||
+          coalesce(biz.svc_names, '') || ' ' ||
+          coalesce(biz.knowledge_text, '')
+        ),
+        to_tsquery('simple', (select terms from fts_terms))
+      ) +
+      (
+        (case when biz.name ilike '%' || (select term from fts_first) || '%' then 10.0
+              when to_tsvector('simple', coalesce(biz.name, '')) @@ to_tsquery('simple', (select terms from fts_terms)) then 8.0
+              else 0 end)
+        +
+        (case when biz.cat_names ilike '%' || (select term from fts_first) || '%' then 5.0
+              when to_tsvector('simple', coalesce(biz.cat_names, '')) @@ to_tsquery('simple', (select terms from fts_terms)) then 4.0
+              else 0 end)
+        +
+        (case when biz.svc_names ilike '%' || (select term from fts_first) || '%' then 2.0
+              when to_tsvector('simple', coalesce(biz.svc_names, '')) @@ to_tsquery('simple', (select terms from fts_terms)) then 1.5
+              else 0 end)
+        +
+        (case when biz.knowledge_text ilike '%' || (select term from fts_first) || '%' then 1.0
+              when to_tsvector('simple', coalesce(biz.knowledge_text, '')) @@ to_tsquery('simple', (select terms from fts_terms)) then 0.5
+              else 0 end)
+        +
+        (case when biz.description ilike '%' || (select term from fts_first) || '%' then 0.5
+              else 0 end)
       ) as fts_rank,
       -- Row number for RRF (1-based rank)
       row_number() over (
-        order by ts_rank(
-          to_tsvector('simple',
-            coalesce(biz.name, '') || ' ' ||
-            coalesce(biz.description, '') || ' ' ||
-            coalesce(biz.cat_names, '') || ' ' ||
-            coalesce(biz.svc_names, '') || ' ' ||
-            coalesce(biz.knowledge_text, '')
-          ),
-          to_tsquery('simple', (select terms from fts_terms))
-        ) desc nulls last
+        order by
+          ts_rank(
+            to_tsvector('simple',
+              coalesce(biz.name, '') || ' ' ||
+              coalesce(biz.description, '') || ' ' ||
+              coalesce(biz.cat_names, '') || ' ' ||
+              coalesce(biz.svc_names, '') || ' ' ||
+              coalesce(biz.knowledge_text, '')
+            ),
+            to_tsquery('simple', (select terms from fts_terms))
+          ) +
+          (
+            (case when biz.name ilike '%' || (select term from fts_first) || '%' then 10.0
+                  when to_tsvector('simple', coalesce(biz.name, '')) @@ to_tsquery('simple', (select terms from fts_terms)) then 8.0
+                  else 0 end)
+            +
+            (case when biz.cat_names ilike '%' || (select term from fts_first) || '%' then 5.0
+                  when to_tsvector('simple', coalesce(biz.cat_names, '')) @@ to_tsquery('simple', (select terms from fts_terms)) then 4.0
+                  else 0 end)
+            +
+            (case when biz.svc_names ilike '%' || (select term from fts_first) || '%' then 2.0
+                  when to_tsvector('simple', coalesce(biz.svc_names, '')) @@ to_tsquery('simple', (select terms from fts_terms)) then 1.5
+                  else 0 end)
+            +
+            (case when biz.knowledge_text ilike '%' || (select term from fts_first) || '%' then 1.0
+                  when to_tsvector('simple', coalesce(biz.knowledge_text, '')) @@ to_tsquery('simple', (select terms from fts_terms)) then 0.5
+                  else 0 end)
+            +
+            (case when biz.description ilike '%' || (select term from fts_first) || '%' then 0.5
+                  else 0 end)
+          ) desc nulls last
       ) as fts_rank_num
     from biz_text biz
     cross join fts_terms
     cross join fts_first
+    cross join token_count
     where (
       -- Category filter
       category_id is null
@@ -201,13 +279,24 @@ as $$
       or biz.name % (select term from fts_first)
       or biz.description % (select term from fts_first)
     )
+    -- ADMISSION FILTER: when query has 2+ terms, require at least one
+    -- high-signal match (name or category) to prevent noise from expanded
+    -- LLM terms like "salon stylist" matching half the beauty industry.
+    and (
+      (select cnt from token_count) <= 1
+      or biz.name ilike '%' || (select term from fts_first) || '%'
+      or biz.cat_names ilike '%' || (select term from fts_first) || '%'
+      or to_tsvector('simple', coalesce(biz.name, '')) @@ to_tsquery('simple', (select terms from fts_terms))
+      or to_tsvector('simple', coalesce(biz.cat_names, '')) @@ to_tsquery('simple', (select terms from fts_terms))
+    )
     limit match_count * 2
   ),
 
   -- ============================================================================
-  -- VECTOR CANDIDATE SET
+  -- VECTOR CANDIDATE SET with cosine distance threshold
   -- ============================================================================
-  -- Independent from FTS. Provides semantic ranking via cosine distance.
+  -- Threshold < 0.7 filters out semantically unrelated businesses.
+  -- With text-embedding-3-small: <0.5 = strong match, 0.5-0.7 = moderate.
   vector_results as (
     select
       b.id,
@@ -224,6 +313,7 @@ as $$
       and b.deleted_at is null
       and b.embedding is not null
       and query_embedding is not null
+      and (b.embedding <=> query_embedding) < 0.7
       and (
         category_id is null
         or exists (
@@ -243,9 +333,7 @@ as $$
   -- RRF FUSION
   -- ============================================================================
   -- Score = 1/(k + rank_fts) + 1/(k + rank_vec)
-  -- k=60 standard. Both sources contribute equally.
-  -- A business found by only one source gets a lower but nonzero score.
-  -- NO threshold — any result with a nonzero score appears.
+  -- k=60. Vector threshold ensures only semantically related businesses appear.
   fused as (
     select
       coalesce(f.id, v.id) as id,
