@@ -1,19 +1,16 @@
 import { NextResponse } from "next/server";
 import { embedAllBusinesses } from "@/lib/search/embeddings";
-import { createServiceClient } from "@/lib/supabase/service";
+import { createClient } from "@/lib/supabase/server";
 
 /**
  * POST /api/admin/embed-all
  *
- * Batch-embed all active businesses. Call once after migration,
- * then DELETE this file. This is a temporary endpoint.
- *
- * Requires service-role key (server-only).
+ * Batch-embed all active businesses. Requires admin session.
+ * embedAllBusinesses() uses the service-role client internally.
  */
 export async function POST() {
-  const supabase = createServiceClient();
+  const supabase = await createClient();
 
-  // Verify caller is admin
   const {
     data: { user },
   } = await supabase.auth.getUser();

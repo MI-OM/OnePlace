@@ -12,12 +12,13 @@ function normalizeKey(query: string): string {
 }
 
 /**
- * Uses the configured LLM to rewrite a natural-language search query into a
- * short keyword phrase, e.g. "I'd love a trim and a shave this week" → "hair cut beard trim".
+ * Uses the configured LLM (gpt-4o-mini) to rewrite a natural-language search
+ * query into 2-5 lowercase keywords, e.g.
+ *   "I'd love a trim and a shave this week" → "hair cut beard trim"
  *
- * Per Doc 05 §66 ("Don't call an LLM for every search") this is invoked ONLY
- * when local interpretation returned no results, and the result is memoized per
- * normalized query so a repeat query never touches the LLM again.
+ * Called in parallel with local query interpretation. The rewritten terms are
+ * merged with locally-extracted terms to give the FTS the richest possible
+ * text to match against. Result is memoized per normalized query.
  */
 export async function rewriteSearchQuery(query: string): Promise<string | null> {
   const key = normalizeKey(query);

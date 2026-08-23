@@ -1,5 +1,6 @@
 import { classifyIntent, interpretQuery, expandSynonyms, interpretQueryTerms } from "@/lib/search/interpret";
 import { embedQuery } from "@/lib/search/embeddings";
+import { rewriteSearchQuery } from "@/lib/search/llm-rewrite";
 import { createAnonClient } from "@/lib/supabase/anon";
 
 export type BusinessSummary = {
@@ -83,11 +84,9 @@ function toSummary(row: BusinessRow): BusinessSummary {
 /**
  * Search businesses using hybrid FTS + vector search.
  *
- * Flow: single RPC call. FTS is the gatekeeper (only matched businesses appear).
- * Vector search boosts ranking for businesses that are also semantically close.
- * No category-first routing, no LLM fallback, no hardcoded thresholds.
- *
- * If FTS finds 0 matches → returns 0 results → "No results found" in UI.
+ * Flow: interpret query locally + rewrite via LLM in parallel,
+ * merge enriched terms, embed query, single hybrid_search RPC.
+ * FTS and vector are independent candidate sources fused via RRF.
  */
 export async function searchBusinesses(
   query: string,
@@ -96,22 +95,29 @@ export async function searchBusinesses(
   const supabase = createAnonClient();
 
   // ── 1. Build enriched search terms ────────────────────────────────────
-  // Combine: content terms from the query + synonym expansion.
-  // This gives the FTS the richest possible text to match against.
+  // Local interpretation (fast, deterministic) + LLM rewrite (smart, ~200ms)
+  // run in parallel, then merge all unique terms for maximum coverage.
   const contentTerms = interpretQueryTerms(query, 6);
   const intent = classifyIntent(query);
-  const allTerms = [...new Set([
+  const localTerms = [...new Set([
     ...contentTerms,
     ...expandSynonyms(contentTerms),
     ...intent.terms,
   ])];
+
+  const llmTerms = await rewriteSearchQuery(query);
+  const llmTokens = llmTerms
+    ? llmTerms.split(/\s+/).filter((t) => t.length >= 2)
+    : [];
+
+  const allTerms = [...new Set([...localTerms, ...llmTokens])];
   const enrichedQuery = allTerms.length > 0 ? allTerms.join(" ") : query.trim();
 
   // ── 2. Generate query embedding (optional — boosts ranking when available) ─
   const queryEmbedding = await embedQuery(enrichedQuery);
 
   // ── 3. Single hybrid search call ──────────────────────────────────────
-  // FTS finds candidates, vector boosts ranking. No fallback chains.
+  // FTS and vector are independent candidate sources, fused via RRF.
   const { data: results, error } = await supabase.rpc(HYBRID_RPC, {
     query_text: enrichedQuery || undefined,
     query_embedding: queryEmbedding ? JSON.stringify(queryEmbedding) : null,
