@@ -114,9 +114,11 @@ const SYNONYMS: Record<string, string[]> = {
   // Health & wellness
   chiropractor: ["wellness"],
   physio: ["wellness"],
-  therapist: ["wellness"],
-  counseling: ["wellness"],
-  counselor: ["wellness"],
+  therapist: ["wellness", "coaching"],
+  counseling: ["coaching", "wellness"],
+  counselor: ["coaching", "wellness"],
+  coach: ["coaching", "counseling"],
+  mentor: ["coaching"],
   // Pets
   vet: ["veterinary", "pet"],
   veterinarian: ["veterinary", "pet"],
@@ -292,6 +294,7 @@ const INTENT_PATTERNS: ReadonlyArray<{ test: RegExp; terms: string[]; categoryHi
   { test: /\b(gym|fitness|workout|trainer|personal\s*trainer|weights|cardio|treadmill|recreation)\b/i, terms: ["fitness"], categoryHint: "fitness" },
   { test: /\b(wedding|marriage|engagement|anniversary|birthday|party|event|cebration|cater(?:ing|er)?|reception|venue|dj|entertainment|planner|planning)\b/i, terms: ["planner", "planning", "event", "wedding", "catering"] },
   { test: /\b(health|nutrition|diet|physical\s*therapy|chiropractor|osteopath)\b/i, terms: ["wellness"], categoryHint: "health" },
+  { test: /\b(coach|coaching|counsel(?:ing|or)?|therapist|ment(?:or|oring))\b/i, terms: ["coaching", "counseling"] },
   // Auto-generated patterns from seed data categories
   { test: /\b(pet|dog|cat|animal|groom(?:ing)?)\b/i, terms: ["pet", "grooming"], categoryHint: "pet" },
   { test: /\b(photo|photograph|camera|portrait|headshot)\b/i, terms: ["photography", "photo"], categoryHint: "photo" },

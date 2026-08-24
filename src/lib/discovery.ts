@@ -85,8 +85,9 @@ function toSummary(row: BusinessRow): BusinessSummary {
  * Search businesses using hybrid FTS + vector search.
  *
  * Flow: interpret query locally + rewrite via LLM in parallel,
- * merge enriched terms for FTS, embed original query for vector search,
- * honor categoryHint to narrow results, single hybrid_search RPC.
+ * merge enriched terms for FTS, embed original query for vector search.
+ * Field-weighted ranking naturally surfaces the most relevant results.
+ * No category filtering — works for any category, current or future.
  */
 export async function searchBusinesses(
   query: string,
@@ -112,35 +113,20 @@ export async function searchBusinesses(
   const enrichedQuery = allTerms.length > 0 ? allTerms.join(" ") : query.trim();
 
   // ── 2. Embed the ORIGINAL query (not enriched) for semantic quality ────
-  // The original sentence has richer semantic meaning than keyword soup.
   const queryEmbedding = await embedQuery(query.trim());
 
-  // ── 3. Resolve categoryHint → category_id ──────────────────────────────
-  let categoryId: string | undefined;
-  if (intent.categoryHint) {
-    const { data: cat } = await supabase
-      .from("categories")
-      .select("id")
-      .ilike("name", `%${intent.categoryHint}%`)
-      .eq("is_active", true)
-      .limit(1)
-      .maybeSingle();
-    categoryId = cat?.id;
-  }
-
-  // ── 4. Single hybrid search call ───────────────────────────────────────
+  // ── 3. Single hybrid search call ───────────────────────────────────────
+  // No category_id filter — field-weighted ranking handles relevance.
   const { data: results, error } = await supabase.rpc(HYBRID_RPC, {
     query_text: enrichedQuery || undefined,
     query_embedding: queryEmbedding ? JSON.stringify(queryEmbedding) : null,
     match_count: maxResults,
-    category_id: categoryId ?? null,
   });
 
   if (error) {
     console.error("[search] hybrid_search error:", error.message, {
       query,
       enrichedQuery,
-      categoryId,
     });
     return [];
   }

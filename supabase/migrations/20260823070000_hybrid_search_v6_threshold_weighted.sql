@@ -8,10 +8,9 @@
 --      ranked the same as "Hair" in the business name.
 --      FIX: field-weighted scoring — name ×10, category ×5, services ×2,
 --      knowledge ×1, description ×0.5 added to ts_rank.
---   3. OR semantics with enriched terms (braid | hair | braiding | salon | stylist)
---      matched half the beauty industry.
---      FIX: require at least one core term to match in name or category
---      when query has 2+ terms — prevents noise from expanded/LLM terms.
+--   3. Category filtering is NOT done in the search function.
+--      The field-weighted ranking naturally pushes the most relevant results
+--      to the top. No hardcoded category maps needed — works for any category.
 
 -- DROP all prior overloads to prevent PostgREST ambiguity errors.
 drop function if exists public.hybrid_search(text, vector(1536), integer, uuid, text, real);
@@ -86,11 +85,6 @@ as $$
   -- First content term for ILIKE matching (handle empty gracefully)
   fts_first as (
     select coalesce((select token from content_tokens limit 1), '') as term
-  ),
-
-  -- Count of content terms (for admission filtering)
-  token_count as (
-    select count(*)::int as cnt from content_tokens
   ),
 
   -- Pre-load all searchable text per business (avoids repeated lateral joins)
@@ -243,7 +237,6 @@ as $$
     from biz_text biz
     cross join fts_terms
     cross join fts_first
-    cross join token_count
     where (
       -- Category filter
       category_id is null
@@ -278,16 +271,6 @@ as $$
       -- Strategy 3: Trigram similarity for typos (name + description)
       or biz.name % (select term from fts_first)
       or biz.description % (select term from fts_first)
-    )
-    -- ADMISSION FILTER: when query has 2+ terms, require at least one
-    -- high-signal match (name or category) to prevent noise from expanded
-    -- LLM terms like "salon stylist" matching half the beauty industry.
-    and (
-      (select cnt from token_count) <= 1
-      or biz.name ilike '%' || (select term from fts_first) || '%'
-      or biz.cat_names ilike '%' || (select term from fts_first) || '%'
-      or to_tsvector('simple', coalesce(biz.name, '')) @@ to_tsquery('simple', (select terms from fts_terms))
-      or to_tsvector('simple', coalesce(biz.cat_names, '')) @@ to_tsquery('simple', (select terms from fts_terms))
     )
     limit match_count * 2
   ),
