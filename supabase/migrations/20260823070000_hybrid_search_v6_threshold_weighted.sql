@@ -272,6 +272,17 @@ as $$
       or biz.name % (select term from fts_first)
       or biz.description % (select term from fts_first)
     )
+    -- QUALITY GATE: require at least one match in a high-signal field
+    -- (name, category, or service). Prevents noise from knowledge-only matches
+    -- where the term appears only in a knowledge item but not in the business's
+    -- core identity (name/category/services).
+    and (
+      biz.name ilike '%' || (select term from fts_first) || '%'
+      or biz.cat_names ilike '%' || (select term from fts_first) || '%'
+      or biz.svc_names ilike '%' || (select term from fts_first) || '%'
+      or to_tsvector('simple', coalesce(biz.name, '') || ' ' || coalesce(biz.cat_names, '') || ' ' || coalesce(biz.svc_names, ''))
+        @@ to_tsquery('simple', (select terms from fts_terms))
+    )
     limit match_count * 2
   ),
 
@@ -296,7 +307,7 @@ as $$
       and b.deleted_at is null
       and b.embedding is not null
       and query_embedding is not null
-      and (b.embedding <=> query_embedding) < 0.7
+      and (b.embedding <=> query_embedding) < 0.55
       and (
         category_id is null
         or exists (

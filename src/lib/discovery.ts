@@ -1,4 +1,4 @@
-import { classifyIntent, interpretQuery, expandSynonyms, interpretQueryTerms } from "@/lib/search/interpret";
+import { expandSynonyms, interpretQueryTerms } from "@/lib/search/interpret";
 import { embedQuery } from "@/lib/search/embeddings";
 import { rewriteSearchQuery } from "@/lib/search/llm-rewrite";
 import { createAnonClient } from "@/lib/supabase/anon";
@@ -96,12 +96,13 @@ export async function searchBusinesses(
   const supabase = createAnonClient();
 
   // ── 1. Build enriched search terms for FTS ─────────────────────────────
+  // Content terms + synonyms + LLM terms. Intent terms are intentionally
+  // excluded — they add generic words (e.g., "community services") that
+  // pollute the FTS query and match too many unrelated businesses.
   const contentTerms = interpretQueryTerms(query, 6);
-  const intent = classifyIntent(query);
   const localTerms = [...new Set([
     ...contentTerms,
     ...expandSynonyms(contentTerms),
-    ...intent.terms,
   ])];
 
   const llmTerms = await rewriteSearchQuery(query);
