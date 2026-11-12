@@ -2,6 +2,7 @@
 
 import { createServiceClient } from "@/lib/supabase/service";
 import { isMemberOf } from "@/lib/chat/staff";
+import { requireBusinessRole } from "@/lib/authz";
 
 export type ServiceRequestItem = {
   id: string;
@@ -21,6 +22,7 @@ export type ServiceRequestItem = {
 export async function getBusinessRequests(
   businessId: string,
 ): Promise<ServiceRequestItem[]> {
+  await requireBusinessRole(businessId);
   const service = createServiceClient();
 
   const { data } = await service

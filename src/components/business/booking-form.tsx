@@ -20,8 +20,14 @@ type Props = {
     durationMinutes: number;
     price: number | null;
     priceType: string;
+    /** Paid online at booking (deposit or full), in cents; null = pay later. */
+    onlinePayment?: { kind: "deposit" | "full"; cents: number; currency: string } | null;
   }[];
 };
+
+function money(cents: number, currency: string) {
+  return new Intl.NumberFormat("en-CA", { style: "currency", currency }).format(cents / 100);
+}
 
 const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -94,9 +100,12 @@ export function BookingForm({ businessId, services }: Props) {
 
       if (result.error) {
         toast.error(result.error);
+      } else if (result.checkoutUrl) {
+        // Stripe Checkout (hosted). The slot is held while the customer pays.
+        window.location.assign(result.checkoutUrl);
       } else {
         toast.success("Booking request submitted! You'll receive confirmation shortly.");
-        router.push(`/business/${businessId}`);
+        router.push(result.bookingUrl ?? `/business/${businessId}`);
       }
     });
   };
@@ -169,6 +178,13 @@ export function BookingForm({ businessId, services }: Props) {
                   {s.durationMinutes} min
                   {s.price != null && (
                     <p className="font-medium text-foreground">${s.price.toFixed(2)}</p>
+                  )}
+                  {s.onlinePayment && (
+                    <p className="mt-0.5 text-[11px] font-medium text-primary">
+                      {s.onlinePayment.kind === "deposit"
+                        ? `${money(s.onlinePayment.cents, s.onlinePayment.currency)} deposit online`
+                        : "Pay online"}
+                    </p>
                   )}
                 </div>
               </div>
@@ -376,8 +392,25 @@ export function BookingForm({ businessId, services }: Props) {
             </div>
           </div>
 
+          {service?.onlinePayment ? (
+            <div className="rounded-xl border border-border bg-muted/40 p-3 text-xs text-muted-foreground">
+              <p className="text-sm font-medium text-foreground">
+                {service.onlinePayment.kind === "deposit" ? "Deposit due now: " : "Due now: "}
+                {money(service.onlinePayment.cents, service.onlinePayment.currency)}
+              </p>
+              <p className="mt-1">
+                You&apos;ll pay securely with Stripe. We hold this time for 30 minutes while you
+                pay; your booking is confirmed as soon as payment goes through.
+              </p>
+            </div>
+          ) : null}
+
           <Button onClick={handleSubmit} disabled={pending} className="w-full">
-            {pending ? "Submitting…" : "Request booking"}
+            {pending
+              ? "Submitting…"
+              : service?.onlinePayment
+                ? `Continue to payment`
+                : "Request booking"}
           </Button>
         </div>
       )}

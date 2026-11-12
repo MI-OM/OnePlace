@@ -13,6 +13,94 @@ export type VoiceSession = {
   requestedByName: string | null;
 };
 
+export type VoiceRole = "customer" | "staff";
+
+export class VoiceAuthError extends Error {
+  constructor(
+    message: string,
+    public status: number,
+  ) {
+    super(message);
+  }
+}
+
+async function requireUserId(): Promise<string> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new VoiceAuthError("Please sign in.", 401);
+  return user.id;
+}
+
+/**
+ * Returns the caller's role in a conversation ("customer" if they own it,
+ * "staff" if they are an active member of its business), or null otherwise.
+ * Every voice endpoint must pass this check before touching a session.
+ */
+export async function getVoiceParticipantRole(
+  userId: string,
+  conversationId: string,
+): Promise<VoiceRole | null> {
+  const service = createServiceClient();
+  const { data: conversation } = await service
+    .from("conversations")
+    .select("customer_id, business_id")
+    .eq("id", conversationId)
+    .maybeSingle();
+  if (!conversation) return null;
+  if (conversation.customer_id === userId) return "customer";
+  if (!conversation.business_id) return null;
+
+  const { data: member } = await service
+    .from("business_members")
+    .select("user_id")
+    .eq("business_id", conversation.business_id)
+    .eq("user_id", userId)
+    .eq("status", "active")
+    .maybeSingle();
+  return member ? "staff" : null;
+}
+
+/**
+ * Loads a voice session and checks that the signed-in caller takes part in
+ * its conversation, optionally with a specific role.
+ */
+export async function authorizeVoiceSession(
+  sessionId: string,
+  requiredRole?: VoiceRole,
+) {
+  const userId = await requireUserId();
+  const service = createServiceClient();
+  const { data: session } = await service
+    .from("voice_sessions")
+    .select(
+      "id, status, livekit_room_name, conversation_id, started_at, metadata",
+    )
+    .eq("id", sessionId)
+    .maybeSingle();
+  if (!session) throw new VoiceAuthError("Session not found.", 404);
+
+  const role = await getVoiceParticipantRole(userId, session.conversation_id);
+  if (!role || (requiredRole && role !== requiredRole)) {
+    throw new VoiceAuthError("You are not part of this call.", 403);
+  }
+  return { userId, role, session };
+}
+
+/** Best display name for a profile (the table has no full_name column). */
+export async function getDisplayName(userId: string): Promise<string | null> {
+  const service = createServiceClient();
+  const { data } = await service
+    .from("profiles")
+    .select("display_name, first_name, last_name")
+    .eq("id", userId)
+    .maybeSingle();
+  if (!data) return null;
+  const full = [data.first_name, data.last_name].filter(Boolean).join(" ");
+  return data.display_name || full || null;
+}
+
 /**
  * Customer requests a voice call. Creates a session with status "pending"
  * and logs a system message in the conversation.
@@ -66,11 +154,7 @@ export async function requestVoiceCall(
   }
 
   // Get customer name for display
-  const { data: profile } = await service
-    .from("profiles")
-    .select("full_name")
-    .eq("id", user.id)
-    .maybeSingle();
+  const profile = { full_name: await getDisplayName(user.id) };
 
   const roomName = `op-${conversationId.slice(0, 8)}-${Date.now()}`;
 
@@ -130,59 +214,40 @@ export async function requestVoiceCall(
  */
 export async function acceptVoiceCall(
   sessionId: string,
-  conversationId: string,
 ): Promise<{ roomName: string }> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("Please sign in.");
+  const { userId, session } = await authorizeVoiceSession(sessionId, "staff");
+  if (session.status !== "pending") {
+    throw new VoiceAuthError("This call is no longer waiting.", 409);
+  }
 
   const service = createServiceClient();
+  const staffName = (await getDisplayName(userId)) ?? "Staff";
 
-  const { data: session } = await service
-    .from("voice_sessions")
-    .select("id, status, livekit_room_name, conversation_id")
-    .eq("id", sessionId)
-    .maybeSingle();
-
-  if (!session) throw new Error("Session not found.");
-  if (session.status !== "pending") {
-    throw new Error("This call is no longer waiting.");
-  }
-  if (session.conversation_id !== conversationId) {
-    throw new Error("Session does not match this conversation.");
-  }
-
-  // Get staff name
-  const { data: profile } = await service
-    .from("profiles")
-    .select("full_name")
-    .eq("id", user.id)
-    .maybeSingle();
-
-  const { error } = await service
+  const { data: updated, error } = await service
     .from("voice_sessions")
     .update({
       status: "connecting",
       started_at: new Date().toISOString(),
       metadata: {
-        ...(session as any).metadata,
-        accepted_by: user.id,
-        accepted_by_name: profile?.full_name ?? "Staff",
+        ...((session.metadata ?? {}) as Record<string, unknown>),
+        accepted_by: userId,
+        accepted_by_name: staffName,
       },
     })
     .eq("id", sessionId)
-    .eq("status", "pending");
+    .eq("status", "pending")
+    .select("id");
 
   if (error) throw new Error("Failed to accept call.");
+  if (!updated || updated.length === 0) {
+    throw new VoiceAuthError("Another team member already took this call.", 409);
+  }
 
-  // Log system message
   await service.from("messages").insert({
-    conversation_id: conversationId,
+    conversation_id: session.conversation_id,
     sender_type: "system",
     message_type: "text",
-    content: `📞 ${profile?.full_name ?? "Team member"} joined the call.`,
+    content: `📞 ${staffName} joined the call.`,
   });
 
   return { roomName: session.livekit_room_name };
@@ -191,33 +256,21 @@ export async function acceptVoiceCall(
 /**
  * Staff member declines a voice call.
  */
-export async function declineVoiceCall(
-  sessionId: string,
-  conversationId: string,
-): Promise<void> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("Please sign in.");
+export async function declineVoiceCall(sessionId: string): Promise<void> {
+  const { session } = await authorizeVoiceSession(sessionId, "staff");
+  if (session.status !== "pending") return;
 
   const service = createServiceClient();
-
-  const { data: session } = await service
-    .from("voice_sessions")
-    .select("id, status, conversation_id")
-    .eq("id", sessionId)
-    .maybeSingle();
-
-  if (!session || session.status !== "pending") return;
-
-  await service
+  const { data: updated } = await service
     .from("voice_sessions")
     .update({ status: "declined", ended_at: new Date().toISOString() })
-    .eq("id", sessionId);
+    .eq("id", sessionId)
+    .eq("status", "pending")
+    .select("id");
+  if (!updated || updated.length === 0) return;
 
   await service.from("messages").insert({
-    conversation_id: conversationId,
+    conversation_id: session.conversation_id,
     sender_type: "system",
     message_type: "text",
     content: "📞 Voice call declined — the team is currently unavailable.",
@@ -225,35 +278,30 @@ export async function declineVoiceCall(
 }
 
 /**
- * Time out a voice call after 60 seconds (called from client-side timer).
+ * Times out a pending voice call (called from the customer's 60-second timer).
  */
-export async function timeoutVoiceCall(
-  sessionId: string,
-  conversationId: string,
-): Promise<void> {
+export async function timeoutVoiceCall(sessionId: string): Promise<void> {
+  const { session } = await authorizeVoiceSession(sessionId);
+  if (session.status !== "pending") return;
+
   const service = createServiceClient();
-
-  const { data: session } = await service
-    .from("voice_sessions")
-    .select("id, status")
-    .eq("id", sessionId)
-    .maybeSingle();
-
-  if (!session || session.status !== "pending") return;
-
-  await service
+  const { data: updated } = await service
     .from("voice_sessions")
     .update({
       status: "timed_out",
       ended_at: new Date().toISOString(),
     })
-    .eq("id", sessionId);
+    .eq("id", sessionId)
+    .eq("status", "pending")
+    .select("id");
+  if (!updated || updated.length === 0) return;
 
   await service.from("messages").insert({
-    conversation_id: conversationId,
+    conversation_id: session.conversation_id,
     sender_type: "system",
     message_type: "text",
-    content: "📞 Call not connected — no team member responded. Try again later or send a message.",
+    content:
+      "📞 Call not connected — no team member responded. Try again later or send a message.",
   });
 }
 
@@ -270,62 +318,54 @@ export async function activateVoiceSession(sessionId: string): Promise<void> {
 }
 
 /**
- * Ends a voice session, updating status and duration. Logs outcome in chat.
+ * Ends a voice session, updating status and duration, and logs the outcome
+ * in chat. Only a participant (the customer or business staff) may end it.
  */
-export async function endVoiceSession(
-  sessionId: string,
-  conversationId?: string,
-): Promise<void> {
+export async function endVoiceSession(sessionId: string): Promise<void> {
+  const { session } = await authorizeVoiceSession(sessionId);
+  if (session.status === "ended") return;
+
   const service = createServiceClient();
-
-  const { data: session } = await service
-    .from("voice_sessions")
-    .select("id, status, started_at, conversation_id, metadata")
-    .eq("id", sessionId)
-    .maybeSingle();
-
-  if (!session || session.status === "ended") return;
-
   const now = new Date();
   const durationSeconds = session.started_at
     ? Math.floor((now.getTime() - new Date(session.started_at).getTime()) / 1000)
     : null;
 
-  await service
+  const { data: updated } = await service
     .from("voice_sessions")
     .update({
       status: "ended",
       ended_at: now.toISOString(),
       duration_seconds: durationSeconds,
     })
-    .eq("id", sessionId);
+    .eq("id", sessionId)
+    .neq("status", "ended")
+    .select("id");
+  // Both sides call this on hang-up; only the first one logs the outcome.
+  if (!updated || updated.length === 0) return;
 
-  // Log outcome
-  const convId = conversationId ?? session.conversation_id;
-  if (convId) {
-    const meta = (session.metadata ?? {}) as Record<string, string>;
-    const wasConnected = ["active", "connecting"].includes(session.status);
+  const meta = (session.metadata ?? {}) as Record<string, string>;
+  const wasConnected = ["active", "connecting"].includes(session.status);
 
-    let logMessage: string;
-    if (wasConnected && durationSeconds != null) {
-      const mins = Math.floor(durationSeconds / 60);
-      const secs = durationSeconds % 60;
-      const dur = mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
-      logMessage = `📞 Call ended — Duration: ${dur}`;
-      if (meta.accepted_by_name) {
-        logMessage += ` with ${meta.accepted_by_name}`;
-      }
-    } else {
-      logMessage = "📞 Call ended — not connected.";
+  let logMessage: string;
+  if (wasConnected && durationSeconds != null) {
+    const mins = Math.floor(durationSeconds / 60);
+    const secs = durationSeconds % 60;
+    const dur = mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
+    logMessage = `📞 Call ended — Duration: ${dur}`;
+    if (meta.accepted_by_name) {
+      logMessage += ` with ${meta.accepted_by_name}`;
     }
-
-    await service.from("messages").insert({
-      conversation_id: convId,
-      sender_type: "system",
-      message_type: "text",
-      content: logMessage,
-    });
+  } else {
+    logMessage = "📞 Call ended — not connected.";
   }
+
+  await service.from("messages").insert({
+    conversation_id: session.conversation_id,
+    sender_type: "system",
+    message_type: "text",
+    content: logMessage,
+  });
 }
 
 /**

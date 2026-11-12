@@ -8,6 +8,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { getBusinessAnalytics } from "@/lib/business/analytics";
 import { AnalyticsDashboard } from "@/components/business/analytics-dashboard";
 import { Button } from "@/components/ui/button";
+import { requireDashboardAccess } from "@/lib/dashboard-access";
 
 export const metadata: Metadata = { title: "Analytics" };
 
@@ -20,6 +21,7 @@ export default async function AnalyticsPage({
   if (!user) notFound();
 
   const { businessId } = await params;
+  await requireDashboardAccess(businessId);
   const service = createServiceClient();
 
   const { data: business } = await service

@@ -162,10 +162,12 @@ export async function createRequest(
   try {
     const service = createServiceClient();
 
+    // Only the conversation's own customer may turn it into a request.
     const { data: conversation, error: convError } = await service
       .from("conversations")
       .select("business_id")
       .eq("id", conversationId)
+      .eq("customer_id", user.id)
       .maybeSingle();
 
     if (convError || !conversation) {

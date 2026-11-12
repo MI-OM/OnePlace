@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { ArrowLeft, Inbox, MessageSquare, Settings, Star, ClipboardList, Users, BookOpen, CalendarDays, BarChart3 } from "lucide-react";
+import { ArrowLeft, Inbox, MessageSquare, Settings, Star, ClipboardList, Users, BookOpen, CalendarDays, BarChart3, CreditCard } from "lucide-react";
 
 import { getUser } from "@/lib/auth";
 import { getBusinessInbox, getBusinessStats } from "@/lib/chat/staff";
@@ -106,6 +106,14 @@ export default async function BusinessInboxPage({
         >
           <CalendarDays className="mr-1.5 size-4" aria-hidden />
           Bookings
+        </Button>
+        <Button
+          render={<Link href={`/dashboard/${businessId}/payments`} />}
+          variant="ghost"
+          size="sm"
+        >
+          <CreditCard className="mr-1.5 size-4" aria-hidden />
+          Payments
         </Button>
         <Button
           render={<Link href={`/dashboard/${businessId}/team`} />}

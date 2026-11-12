@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { verifyTurnstileToken } from "@/lib/turnstile";
+import { safeRedirectPath } from "@/lib/utils";
 import { z } from "zod";
 
 export type ActionResult = {
@@ -85,7 +86,7 @@ export async function signIn(
   });
 
   if (error) return { error: errorFrom(error) };
-  return { success: true, redirectTo };
+  return { success: true, redirectTo: safeRedirectPath(redirectTo) };
 }
 
 export async function signUp(

@@ -67,7 +67,7 @@ function buildBusinessDocument(business: {
 /**
  * Generate an embedding vector for a text string using OpenAI.
  */
-async function embedText(text: string): Promise<number[]> {
+async function embedText(text: string, timeoutMs = 10_000): Promise<number[]> {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
     throw new Error("OPENAI_API_KEY not set — cannot generate embeddings");
@@ -84,11 +84,12 @@ async function embedText(text: string): Promise<number[]> {
       input: text,
       dimensions: EMBEDDING_DIMS,
     }),
+    // Without a timeout a stalled OpenAI call hangs the whole search page.
+    signal: AbortSignal.timeout(timeoutMs),
   });
 
   if (!response.ok) {
-    const body = await response.text();
-    throw new Error(`OpenAI embedding failed (${response.status}): ${body}`);
+    throw new Error(`OpenAI embedding failed (${response.status})`);
   }
 
   const data = (await response.json()) as {
@@ -186,11 +187,24 @@ export async function embedBusiness(businessId: string): Promise<{ ok: boolean; 
  * Embed a search query string. Used at search time to generate
  * the query vector for hybrid search.
  */
+const queryEmbeddingCache = new Map<string, number[]>();
+const MAX_QUERY_EMBEDDINGS = 500;
+
 export async function embedQuery(query: string): Promise<number[] | null> {
+  const key = query.trim().toLowerCase().slice(0, 200);
+  if (!key) return null;
+  const cached = queryEmbeddingCache.get(key);
+  if (cached) return cached;
   try {
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) return null;
-    return await embedText(query);
+    const embedding = await embedText(key, 3_000);
+    queryEmbeddingCache.set(key, embedding);
+    if (queryEmbeddingCache.size > MAX_QUERY_EMBEDDINGS) {
+      const oldest = queryEmbeddingCache.keys().next().value;
+      if (oldest !== undefined) queryEmbeddingCache.delete(oldest);
+    }
+    return embedding;
   } catch {
     return null;
   }

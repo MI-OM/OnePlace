@@ -1,30 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServiceClient } from "@/lib/supabase/service";
+import { authorizeVoiceSession } from "@/lib/voice";
+import { voiceErrorResponse } from "@/lib/voice-route";
 
 /**
  * GET /api/voice/status?sessionId=xxx
- * Poll for current voice session status.
+ * Poll for current voice session status (participants only).
  */
 export async function GET(request: NextRequest) {
   const sessionId = request.nextUrl.searchParams.get("sessionId");
-
   if (!sessionId) {
     return NextResponse.json(
       { error: "sessionId query param is required." },
       { status: 400 },
     );
   }
-
-  const service = createServiceClient();
-  const { data: session } = await service
-    .from("voice_sessions")
-    .select("id, status")
-    .eq("id", sessionId)
-    .maybeSingle();
-
-  if (!session) {
-    return NextResponse.json({ error: "Session not found." }, { status: 404 });
+  try {
+    const { session } = await authorizeVoiceSession(sessionId);
+    return NextResponse.json({ status: session.status });
+  } catch (e) {
+    return voiceErrorResponse(e, "status");
   }
-
-  return NextResponse.json({ status: session.status });
 }

@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { getUser } from "@/lib/auth";
 import { getExceptions } from "@/lib/business/availability-actions";
 import { AvailabilityPageClient } from "@/components/business/availability-page-client";
+import { requireDashboardAccess } from "@/lib/dashboard-access";
 
 export const metadata: Metadata = { title: "Availability — Dashboard" };
 
@@ -16,6 +17,7 @@ export default async function AvailabilityPage({
   if (!user) notFound();
 
   const { businessId } = await params;
+  await requireDashboardAccess(businessId);
   const now = new Date();
   const year = now.getFullYear();
   const month = now.getMonth() + 1;

@@ -1,27 +1,17 @@
 "use server";
 
 import { z } from "zod";
-import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { revalidatePath } from "next/cache";
+import { requireBusinessRole, BUSINESS_ADMIN_ROLES } from "@/lib/authz";
 
 async function requireBusinessMember(businessId: string) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("Please sign in.");
+  return (await requireBusinessRole(businessId)).userId;
+}
 
-  const { data: member } = await supabase
-    .from("business_members")
-    .select("id")
-    .eq("business_id", businessId)
-    .eq("user_id", user.id)
-    .eq("status", "active")
-    .maybeSingle();
-
-  if (!member) throw new Error("You don't have access to this business.");
-  return user.id;
+/** Owners and managers only: matches the RLS hardening for config writes. */
+async function requireBusinessEditor(businessId: string) {
+  return (await requireBusinessRole(businessId, BUSINESS_ADMIN_ROLES)).userId;
 }
 
 export type ExceptionEntry = {
@@ -77,7 +67,7 @@ export async function upsertException(
   data: z.infer<typeof exceptionSchema>,
 ): Promise<{ ok: boolean; error?: string }> {
   try {
-    await requireBusinessMember(businessId);
+    await requireBusinessEditor(businessId);
     const parsed = exceptionSchema.parse(data);
     const service = createServiceClient();
 
@@ -109,7 +99,7 @@ export async function deleteException(
   exceptionDate: string,
 ): Promise<{ ok: boolean; error?: string }> {
   try {
-    await requireBusinessMember(businessId);
+    await requireBusinessEditor(businessId);
     const service = createServiceClient();
 
     const { error } = await service

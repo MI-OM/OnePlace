@@ -8,6 +8,7 @@ import type { BookingItem } from "@/lib/business/booking-actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PaymentStatusBadge, formatMoney } from "@/components/bookings/booking-badges";
 
 type Props = {
   businessId: string;
@@ -39,14 +40,39 @@ export function BookingsManager({ businessId, initialBookings }: Props) {
     bookingId: string,
     status: "confirmed" | "cancelled" | "completed" | "no_show",
   ) => {
+    const booking = bookings.find((b) => b.id === bookingId);
+    const refundable = booking ? booking.amount_paid_cents - booking.amount_refunded_cents : 0;
+    if (
+      status === "cancelled" &&
+      refundable > 0 &&
+      !window.confirm(
+        `Cancel this booking and refund ${formatMoney(refundable, booking?.currency)} to the customer?`,
+      )
+    ) {
+      return;
+    }
     startTransition(async () => {
       const result = await updateBookingStatus(businessId, bookingId, status);
       if (result.error) {
         toast.error(result.error);
       } else {
-        toast.success(`Booking ${status}.`);
+        toast.success(
+          result.refundedCents
+            ? `Booking cancelled. ${formatMoney(result.refundedCents, booking?.currency)} refunded.`
+            : `Booking ${status.replace("_", " ")}.`,
+        );
         setBookings((prev) =>
-          prev.map((b) => (b.id === bookingId ? { ...b, status } : b)),
+          prev.map((b) =>
+          b.id === bookingId
+            ? {
+                ...b,
+                status,
+                ...(result.refundedCents
+                  ? { payment_status: "refunded", amount_refunded_cents: b.amount_paid_cents }
+                  : {}),
+              }
+            : b,
+        ),
         );
       }
     });
@@ -89,8 +115,15 @@ export function BookingsManager({ businessId, initialBookings }: Props) {
                   <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${STATUS_STYLES[booking.status] ?? ""}`}>
                     {booking.status}
                   </span>
+                  <PaymentStatusBadge status={booking.payment_status} />
                   {booking.service_name && (
                     <span className="text-sm font-medium">{booking.service_name}</span>
+                  )}
+                  {booking.amount_paid_cents > 0 && (
+                    <span className="text-xs text-muted-foreground">
+                      {formatMoney(booking.amount_paid_cents, booking.currency)}
+                      {booking.payment_kind === "deposit" ? " deposit" : ""}
+                    </span>
                   )}
                 </div>
                 <div className="mt-2 flex flex-wrap gap-3 text-xs text-muted-foreground">
@@ -123,7 +156,10 @@ export function BookingsManager({ businessId, initialBookings }: Props) {
               </div>
 
               {/* Actions */}
-              {booking.status === "pending" && (
+              {booking.status === "pending" && booking.payment_status === "awaiting_payment" && (
+                <span className="shrink-0 text-xs text-muted-foreground">Waiting for payment</span>
+              )}
+              {booking.status === "pending" && booking.payment_status !== "awaiting_payment" && (
                 <div className="flex shrink-0 gap-1">
                   <Button
                     size="sm"
@@ -162,6 +198,17 @@ export function BookingsManager({ businessId, initialBookings }: Props) {
                     disabled={pending}
                   >
                     No show
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => handleStatusChange(booking.id, "cancelled")}
+                    disabled={pending}
+                  >
+                    <XCircle className="mr-1 size-3.5 text-red-500" aria-hidden />
+                    {booking.amount_paid_cents - booking.amount_refunded_cents > 0
+                      ? "Cancel & refund"
+                      : "Cancel"}
                   </Button>
                 </div>
               )}

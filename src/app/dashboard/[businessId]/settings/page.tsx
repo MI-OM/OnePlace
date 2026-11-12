@@ -7,6 +7,7 @@ import { getUser } from "@/lib/auth";
 import { createServiceClient } from "@/lib/supabase/service";
 import { BusinessSettingsForm } from "@/components/business/business-settings-form";
 import { Button } from "@/components/ui/button";
+import { requireDashboardAccess, BUSINESS_ADMIN_ROLES } from "@/lib/dashboard-access";
 
 export const metadata: Metadata = { title: "Business Settings" };
 
@@ -19,6 +20,7 @@ export default async function BusinessSettingsPage({
   if (!user) notFound();
 
   const { businessId } = await params;
+  await requireDashboardAccess(businessId, BUSINESS_ADMIN_ROLES);
   const service = createServiceClient();
 
   const { data: business } = await service

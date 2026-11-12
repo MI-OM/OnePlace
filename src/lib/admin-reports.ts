@@ -2,6 +2,7 @@
 
 import { createServiceClient } from "@/lib/supabase/service";
 import { toCSV } from "@/lib/csv";
+import { requirePlatformAdmin } from "@/lib/authz";
 
 type ReportData = {
   headers: string[];
@@ -9,6 +10,7 @@ type ReportData = {
 };
 
 export async function getAdminBusinessesData(): Promise<ReportData> {
+  await requirePlatformAdmin();
   const service = createServiceClient();
   const { data } = await service
     .from("businesses")
@@ -46,6 +48,7 @@ export async function getAdminBusinessesData(): Promise<ReportData> {
 }
 
 export async function getAdminUsersData(): Promise<ReportData> {
+  await requirePlatformAdmin();
   const service = createServiceClient();
   const { data } = await service
     .from("profiles")
@@ -67,6 +70,7 @@ export async function getAdminUsersData(): Promise<ReportData> {
 }
 
 export async function getAdminReviewsData(): Promise<ReportData> {
+  await requirePlatformAdmin();
   const service = createServiceClient();
   const { data } = await service
     .from("reviews")
@@ -106,6 +110,7 @@ export async function getAdminReviewsData(): Promise<ReportData> {
 export async function getAdminAuditData(
   filters?: { entityType?: string; action?: string; days?: number },
 ): Promise<ReportData> {
+  await requirePlatformAdmin();
   const service = createServiceClient();
   let query = service
     .from("audit_logs")

@@ -1,29 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { acceptVoiceCall } from "@/lib/voice";
+import { readSessionId, voiceErrorResponse } from "@/lib/voice-route";
 
 /**
  * POST /api/voice/accept
- * Staff member accepts a pending voice call.
+ * A member of the conversation's business accepts a pending voice call.
  */
 export async function POST(request: NextRequest) {
-  let body: { sessionId?: string; conversationId?: string };
-  try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid request." }, { status: 400 });
+  const sessionId = await readSessionId(request);
+  if (!sessionId) {
+    return NextResponse.json({ error: "sessionId is required." }, { status: 400 });
   }
-
-  if (!body.sessionId || !body.conversationId) {
-    return NextResponse.json(
-      { error: "sessionId and conversationId are required." },
-      { status: 400 },
-    );
-  }
-
   try {
-    const { roomName } = await acceptVoiceCall(body.sessionId, body.conversationId);
+    const { roomName } = await acceptVoiceCall(sessionId);
     return NextResponse.json({ ok: true, roomName });
   } catch (e) {
-    return NextResponse.json({ error: String(e) }, { status: 400 });
+    return voiceErrorResponse(e, "accept");
   }
 }

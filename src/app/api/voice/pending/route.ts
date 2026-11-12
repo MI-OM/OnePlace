@@ -1,13 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
+import { getVoiceParticipantRole } from "@/lib/voice";
 
 /**
  * GET /api/voice/pending?conversationId=xxx
- * Returns pending voice session info for a conversation (staff use).
+ * Returns the pending voice session for a conversation. Only members of the
+ * conversation's business may see it (they are the ones who answer).
  */
 export async function GET(request: NextRequest) {
   const conversationId = request.nextUrl.searchParams.get("conversationId");
-
   if (!conversationId) {
     return NextResponse.json(
       { error: "conversationId query param is required." },
@@ -15,8 +17,18 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const service = createServiceClient();
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    return NextResponse.json({ error: "Please sign in." }, { status: 401 });
+  }
+  if ((await getVoiceParticipantRole(user.id, conversationId)) !== "staff") {
+    return NextResponse.json({ error: "Not allowed." }, { status: 403 });
+  }
 
+  const service = createServiceClient();
   const { data: session } = await service
     .from("voice_sessions")
     .select("id, status, metadata")
@@ -31,7 +43,6 @@ export async function GET(request: NextRequest) {
   }
 
   const meta = (session.metadata ?? {}) as Record<string, string>;
-
   return NextResponse.json({
     sessionId: session.id,
     requestedByName: meta.requested_by_name ?? "Customer",

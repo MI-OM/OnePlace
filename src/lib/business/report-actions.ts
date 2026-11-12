@@ -2,6 +2,7 @@
 
 import { createServiceClient } from "@/lib/supabase/service";
 import { toCSV } from "@/lib/csv";
+import { requireBusinessRole, BUSINESS_ADMIN_ROLES } from "@/lib/authz";
 
 type ReportData = {
   headers: string[];
@@ -11,6 +12,7 @@ type ReportData = {
 export async function getBusinessBookingsData(
   businessId: string,
 ): Promise<ReportData> {
+  await requireBusinessRole(businessId, BUSINESS_ADMIN_ROLES);
   const service = createServiceClient();
   const { data } = await service
     .from("bookings")
@@ -54,6 +56,7 @@ export async function getBusinessBookingsData(
 export async function getBusinessRequestsData(
   businessId: string,
 ): Promise<ReportData> {
+  await requireBusinessRole(businessId, BUSINESS_ADMIN_ROLES);
   const service = createServiceClient();
   const { data } = await service
     .from("service_requests")
@@ -96,6 +99,7 @@ export async function getBusinessRequestsData(
 export async function getBusinessReviewsData(
   businessId: string,
 ): Promise<ReportData> {
+  await requireBusinessRole(businessId, BUSINESS_ADMIN_ROLES);
   const service = createServiceClient();
   const { data } = await service
     .from("reviews")

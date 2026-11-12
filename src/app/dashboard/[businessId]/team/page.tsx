@@ -7,6 +7,7 @@ import { getUser } from "@/lib/auth";
 import { createServiceClient } from "@/lib/supabase/service";
 import { TeamManager } from "@/components/business/team-manager";
 import { Button } from "@/components/ui/button";
+import { requireDashboardAccess } from "@/lib/dashboard-access";
 
 export const metadata: Metadata = { title: "Team Management" };
 
@@ -19,6 +20,7 @@ export default async function TeamPage({
   if (!user) notFound();
 
   const { businessId } = await params;
+  await requireDashboardAccess(businessId);
   const service = createServiceClient();
 
   const { data: business } = await service
