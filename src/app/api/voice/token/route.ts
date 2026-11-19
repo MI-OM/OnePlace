@@ -3,6 +3,8 @@ import { AccessToken } from "livekit-server-sdk";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { authorizeVoiceSession, getDisplayName } from "@/lib/voice";
+import { voiceErrorResponse } from "@/lib/voice-route";
 
 const LIVEKIT_API_KEY = process.env.LIVEKIT_API_KEY ?? "";
 const LIVEKIT_API_SECRET = process.env.LIVEKIT_API_SECRET ?? "";
@@ -48,16 +50,22 @@ export async function POST(request: NextRequest) {
 
   const service = createServiceClient();
 
-  // If sessionId is provided, this is a staff member joining an existing session
+  // If sessionId is provided, a participant is joining an existing session:
+  // the customer who requested it, or the staff member who accepted it.
   if (body.sessionId) {
-    const { data: session } = await service
-      .from("voice_sessions")
-      .select("id, status, livekit_room_name, conversation_id")
-      .eq("id", body.sessionId)
-      .maybeSingle();
-
-    if (!session) {
-      return NextResponse.json({ error: "Session not found." }, { status: 404 });
+    let session;
+    try {
+      const auth = await authorizeVoiceSession(body.sessionId);
+      session = auth.session;
+      const meta = (session.metadata ?? {}) as Record<string, string>;
+      if (auth.role === "staff" && meta.accepted_by !== user.id) {
+        return NextResponse.json(
+          { error: "Accept the call before joining." },
+          { status: 403 },
+        );
+      }
+    } catch (e) {
+      return voiceErrorResponse(e, "token");
     }
 
     if (session.status !== "connecting" && session.status !== "active") {
@@ -130,11 +138,7 @@ export async function POST(request: NextRequest) {
   }
 
   // Get customer name
-  const { data: profile } = await service
-    .from("profiles")
-    .select("full_name")
-    .eq("id", user.id)
-    .maybeSingle();
+  const profile = { full_name: await getDisplayName(user.id) };
 
   const roomName = `op-${body.conversationId.slice(0, 8)}-${Date.now()}`;
 
@@ -169,7 +173,8 @@ export async function POST(request: NextRequest) {
   const { data: members } = await service
     .from("business_members")
     .select("user_id")
-    .eq("business_id", conversation.business_id);
+    .eq("business_id", conversation.business_id)
+    .eq("status", "active");
 
   if (members && members.length > 0) {
     const notifications = members.map((m) => ({

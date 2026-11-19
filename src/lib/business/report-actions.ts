@@ -1,7 +1,9 @@
 "use server";
 
 import { createServiceClient } from "@/lib/supabase/service";
+import { one, personName } from "@/lib/utils";
 import { toCSV } from "@/lib/csv";
+import { requireBusinessRole, BUSINESS_ADMIN_ROLES } from "@/lib/authz";
 
 type ReportData = {
   headers: string[];
@@ -11,11 +13,12 @@ type ReportData = {
 export async function getBusinessBookingsData(
   businessId: string,
 ): Promise<ReportData> {
+  await requireBusinessRole(businessId, BUSINESS_ADMIN_ROLES);
   const service = createServiceClient();
   const { data } = await service
     .from("bookings")
     .select(
-      `id, booking_date, start_time, end_time, status, notes,
+      `id, booking_date, start_time, end_time, status, notes, created_at,
        customer_name, customer_email, customer_phone,
        service:business_services(name)`,
     )
@@ -35,7 +38,7 @@ export async function getBusinessBookingsData(
     "Created",
   ];
 
-  const rows = (data ?? []).map((b: any) => [
+  const rows = (data ?? []).map((b) => [
     b.booking_date,
     b.start_time,
     b.end_time,
@@ -43,7 +46,7 @@ export async function getBusinessBookingsData(
     b.customer_name ?? "",
     b.customer_email ?? "",
     b.customer_phone ?? "",
-    b.service?.name ?? "",
+    one(b.service)?.name ?? "",
     b.notes ?? "",
     new Date(b.created_at).toLocaleDateString(),
   ]);
@@ -54,6 +57,7 @@ export async function getBusinessBookingsData(
 export async function getBusinessRequestsData(
   businessId: string,
 ): Promise<ReportData> {
+  await requireBusinessRole(businessId, BUSINESS_ADMIN_ROLES);
   const service = createServiceClient();
   const { data } = await service
     .from("service_requests")
@@ -76,15 +80,12 @@ export async function getBusinessRequestsData(
     "Notes",
   ];
 
-  const rows = (data ?? []).map((r: any) => [
+  const rows = (data ?? []).map((r) => [
     new Date(r.created_at).toLocaleDateString(),
     r.request_type,
     r.status,
-    r.customer
-      ? r.customer.display_name ??
-        [r.customer.first_name, r.customer.last_name].filter(Boolean).join(" ")
-      : "Anonymous",
-    r.service?.name ?? "General",
+    personName(one(r.customer), "Anonymous"),
+    one(r.service)?.name ?? "General",
     r.requested_date ?? "",
     r.requested_time ?? "",
     r.notes ?? "",
@@ -96,6 +97,7 @@ export async function getBusinessRequestsData(
 export async function getBusinessReviewsData(
   businessId: string,
 ): Promise<ReportData> {
+  await requireBusinessRole(businessId, BUSINESS_ADMIN_ROLES);
   const service = createServiceClient();
   const { data } = await service
     .from("reviews")
@@ -108,16 +110,13 @@ export async function getBusinessReviewsData(
 
   const headers = ["Date", "Rating", "Status", "Title", "Body", "Reviewer"];
 
-  const rows = (data ?? []).map((r: any) => [
+  const rows = (data ?? []).map((r) => [
     new Date(r.created_at).toLocaleDateString(),
     r.rating,
     r.status,
     r.title ?? "",
     r.body ?? "",
-    r.reviewer
-      ? r.reviewer.display_name ??
-        [r.reviewer.first_name, r.reviewer.last_name].filter(Boolean).join(" ")
-      : "Anonymous",
+    personName(one(r.reviewer), "Anonymous"),
   ]);
 
   return { headers, rows };

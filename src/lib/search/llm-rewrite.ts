@@ -28,7 +28,6 @@ export async function rewriteSearchQuery(query: string): Promise<string | null> 
   }
 
   if (!hasAIProvider() || !key) {
-    rewriteCache.set(key, null);
     return null;
   }
 
@@ -44,18 +43,18 @@ export async function rewriteSearchQuery(query: string): Promise<string | null> 
           "Only return the keywords.",
       },
       { role: "user", content: key },
-    ]);
+    ], { timeoutMs: 2_500, maxTokens: 30 });
 
     const content = completion.content?.trim() ?? "";
     const rewritten = content.replace(/[.,]/g, " ");
     rewriteCache.set(key, rewritten || null);
     if (rewriteCache.size > MAX_CACHE) {
       const oldestKey = rewriteCache.keys().next().value;
-      if (oldestKey) rewriteCache.delete(oldestKey);
+      if (oldestKey !== undefined) rewriteCache.delete(oldestKey);
     }
     return rewritten || null;
   } catch {
-    rewriteCache.set(key, null);
+    // Don't cache failures: a transient timeout shouldn't stick.
     return null;
   }
 }

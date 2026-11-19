@@ -89,11 +89,15 @@ function toSummary(row: BusinessRow): BusinessSummary {
  * Field-weighted ranking naturally surfaces the most relevant results.
  * No category filtering — works for any category, current or future.
  */
+const MAX_SEARCH_QUERY_LENGTH = 200;
+
 export async function searchBusinesses(
   query: string,
   maxResults = 30,
 ): Promise<BusinessSummary[]> {
   const supabase = createAnonClient();
+  // Public, unauthenticated input that drives paid LLM + embedding calls.
+  query = query.slice(0, MAX_SEARCH_QUERY_LENGTH);
 
   // ── 1. Build enriched search terms for FTS ─────────────────────────────
   // Content terms + synonyms + LLM terms. Intent terms are intentionally
@@ -105,16 +109,18 @@ export async function searchBusinesses(
     ...expandSynonyms(contentTerms),
   ])];
 
-  const llmTerms = await rewriteSearchQuery(query);
+  // The rewrite and the embedding are independent; run them together.
+  const [llmTerms, queryEmbedding] = await Promise.all([
+    rewriteSearchQuery(query),
+    // Embed the ORIGINAL query (not enriched) for semantic quality.
+    embedQuery(query.trim()),
+  ]);
   const llmTokens = llmTerms
     ? llmTerms.split(/\s+/).filter((t) => t.length >= 2)
     : [];
 
   const allTerms = [...new Set([...localTerms, ...llmTokens])];
   const enrichedQuery = allTerms.length > 0 ? allTerms.join(" ") : query.trim();
-
-  // ── 2. Embed the ORIGINAL query (not enriched) for semantic quality ────
-  const queryEmbedding = await embedQuery(query.trim());
 
   // ── 3. Single hybrid search call ───────────────────────────────────────
   // No category_id filter — field-weighted ranking handles relevance.
@@ -553,7 +559,7 @@ export async function enrichWithDistance(
     .in("id", ids);
 
   const coordsMap = new Map(
-    (data ?? []).map((row: any) => [row.id, { lat: row.latitude, lng: row.longitude }]),
+    (data ?? []).map((row) => [row.id, { lat: row.latitude, lng: row.longitude }]),
   );
 
   const enriched = results.map((r) => {

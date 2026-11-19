@@ -45,6 +45,9 @@ export function UserMenu({
         <DropdownMenuItem render={<Link href="/account" />}>
           Your account
         </DropdownMenuItem>
+        <DropdownMenuItem render={<Link href="/bookings" />}>
+          My bookings
+        </DropdownMenuItem>
         <DropdownMenuItem render={<Link href="/conversations" />}>
           Conversations
         </DropdownMenuItem>

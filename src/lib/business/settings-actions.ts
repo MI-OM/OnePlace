@@ -1,10 +1,10 @@
 "use server";
 
 import { z } from "zod";
-import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { revalidatePath } from "next/cache";
 import { embedBusiness } from "@/lib/search/embeddings";
+import { requireBusinessRole, BUSINESS_ADMIN_ROLES } from "@/lib/authz";
 
 const updateProfileSchema = z.object({
   name: z.string().min(2, "Business name required"),
@@ -54,23 +54,9 @@ const updateServicesSchema = z.object({
   deletedIds: z.array(z.string()),
 });
 
-async function requireBusinessMember(businessId: string) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("Please sign in.");
-
-  const { data: member } = await supabase
-    .from("business_members")
-    .select("id")
-    .eq("business_id", businessId)
-    .eq("user_id", user.id)
-    .eq("status", "active")
-    .maybeSingle();
-
-  if (!member) throw new Error("You don't have access to this business.");
-  return user.id;
+/** Owners and managers only: matches the RLS hardening for config writes. */
+async function requireBusinessEditor(businessId: string) {
+  return (await requireBusinessRole(businessId, BUSINESS_ADMIN_ROLES)).userId;
 }
 
 export async function updateBusinessProfile(
@@ -78,7 +64,7 @@ export async function updateBusinessProfile(
   data: z.infer<typeof updateProfileSchema>,
 ): Promise<{ ok: boolean; error?: string }> {
   try {
-    await requireBusinessMember(businessId);
+    await requireBusinessEditor(businessId);
     const parsed = updateProfileSchema.parse(data);
     const service = createServiceClient();
 
@@ -117,7 +103,7 @@ export async function updateBusinessAIConfig(
   data: z.infer<typeof updateAIConfigSchema>,
 ): Promise<{ ok: boolean; error?: string }> {
   try {
-    await requireBusinessMember(businessId);
+    await requireBusinessEditor(businessId);
     const parsed = updateAIConfigSchema.parse(data);
     const service = createServiceClient();
 
@@ -147,7 +133,7 @@ export async function updateBusinessHours(
   data: z.infer<typeof updateHoursSchema>,
 ): Promise<{ ok: boolean; error?: string }> {
   try {
-    await requireBusinessMember(businessId);
+    await requireBusinessEditor(businessId);
     const parsed = updateHoursSchema.parse(data);
     const service = createServiceClient();
 
@@ -180,7 +166,7 @@ export async function updateBusinessServices(
   data: z.infer<typeof updateServicesSchema>,
 ): Promise<{ ok: boolean; error?: string }> {
   try {
-    await requireBusinessMember(businessId);
+    await requireBusinessEditor(businessId);
     const parsed = updateServicesSchema.parse(data);
     const service = createServiceClient();
 
@@ -248,7 +234,7 @@ export async function updateBusinessImages(
   data: z.infer<typeof updateImagesSchema>,
 ): Promise<{ ok: boolean; error?: string }> {
   try {
-    await requireBusinessMember(businessId);
+    await requireBusinessEditor(businessId);
     const parsed = updateImagesSchema.parse(data);
     const service = createServiceClient();
 
@@ -302,7 +288,7 @@ export async function updateBusinessWebsite(
   data: z.infer<typeof updateWebsiteSchema>,
 ): Promise<{ ok: boolean; error?: string }> {
   try {
-    await requireBusinessMember(businessId);
+    await requireBusinessEditor(businessId);
     const parsed = updateWebsiteSchema.parse(data);
     const service = createServiceClient();
 
@@ -355,14 +341,15 @@ export async function updateBusinessProducts(
   data: z.infer<typeof updateProductsSchema>,
 ): Promise<{ ok: boolean; error?: string }> {
   try {
-    await requireBusinessMember(businessId);
+    await requireBusinessEditor(businessId);
     const parsed = updateProductsSchema.parse(data);
     const service = createServiceClient();
 
     const { error } = await service
       .from("business_products")
       .delete()
-      .in("id", parsed.deletedIds);
+      .in("id", parsed.deletedIds)
+      .eq("business_id", businessId);
 
     if (error) return { ok: false, error: error.message };
 
@@ -371,8 +358,19 @@ export async function updateBusinessProducts(
       const productsWithId = parsed.products.filter((p) => p.id !== undefined && p.id !== null);
       const productsNew = parsed.products.filter((p) => p.id === undefined || p.id === null);
 
-      // Upsert products that already have IDs
+      // Upsert products that already have IDs. Every id must already belong
+      // to this business, or an upsert could hijack another business's row.
       if (productsWithId.length > 0) {
+        const ids = productsWithId.map((p) => p.id as string);
+        const { data: owned } = await service
+          .from("business_products")
+          .select("id")
+          .eq("business_id", businessId)
+          .in("id", ids);
+        if ((owned ?? []).length !== new Set(ids).size) {
+          return { ok: false, error: "Some products don't belong to this business." };
+        }
+
         const { error: upsertError } = await service
           .from("business_products")
           .upsert(

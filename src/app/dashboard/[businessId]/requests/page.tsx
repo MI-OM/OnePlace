@@ -9,6 +9,7 @@ import { getBusinessRequests } from "@/lib/business/request-actions";
 import { RequestsManager } from "@/components/business/requests-manager";
 import { BusinessExportBar } from "@/components/business/business-export-bar";
 import { Button } from "@/components/ui/button";
+import { requireDashboardAccess } from "@/lib/dashboard-access";
 
 export const metadata: Metadata = { title: "Requests — OnePlace" };
 
@@ -21,6 +22,7 @@ export default async function RequestsPage({
   if (!user) notFound();
 
   const { businessId } = await params;
+  await requireDashboardAccess(businessId);
   const service = createServiceClient();
 
   const { data: business } = await service

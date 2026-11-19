@@ -22,7 +22,31 @@ async function requireBusinessAdmin(businessId: string) {
     .maybeSingle();
 
   if (!member) throw new Error("Only owners and managers can manage staff.");
-  return user.id;
+  return { userId: user.id, role: member.role as "owner" | "manager" };
+}
+
+/** Loads a member row, making sure it belongs to this business. */
+async function getMemberInBusiness(businessId: string, memberId: string) {
+  const service = createServiceClient();
+  const { data } = await service
+    .from("business_members")
+    .select("id, role, status")
+    .eq("id", memberId)
+    .eq("business_id", businessId)
+    .maybeSingle();
+  if (!data) throw new Error("That team member isn't part of this business.");
+  return data as { id: string; role: string; status: string };
+}
+
+async function countActiveOwners(businessId: string): Promise<number> {
+  const service = createServiceClient();
+  const { count } = await service
+    .from("business_members")
+    .select("id", { count: "exact", head: true })
+    .eq("business_id", businessId)
+    .eq("role", "owner")
+    .eq("status", "active");
+  return count ?? 0;
 }
 
 // ─────────────────────────────────────────────
@@ -35,7 +59,10 @@ const inviteSchema = z.object({
 });
 
 // Check if a profiles row exists for a user ID
-async function ensureProfilesRow(userId: string, supabase: any) {
+async function ensureProfilesRow(
+  userId: string,
+  supabase: ReturnType<typeof createServiceClient> | Awaited<ReturnType<typeof createClient>>,
+) {
   const { data: profile } = await supabase
     .from("profiles")
     .select("id")
@@ -119,9 +146,21 @@ export async function updateStaffRole(
   role: "owner" | "manager" | "staff",
 ): Promise<{ ok: boolean; error?: string }> {
   try {
-    await requireBusinessAdmin(businessId);
-    const service = createServiceClient();
+    const caller = await requireBusinessAdmin(businessId);
+    const target = await getMemberInBusiness(businessId, memberId);
 
+    if ((role === "owner" || target.role === "owner") && caller.role !== "owner") {
+      return { ok: false, error: "Only an owner can change ownership." };
+    }
+    if (
+      target.role === "owner" &&
+      role !== "owner" &&
+      (await countActiveOwners(businessId)) <= 1
+    ) {
+      return { ok: false, error: "A business needs at least one owner." };
+    }
+
+    const service = createServiceClient();
     const { error } = await service
       .from("business_members")
       .update({ role })
@@ -142,9 +181,19 @@ export async function removeStaff(
   memberId: string,
 ): Promise<{ ok: boolean; error?: string }> {
   try {
-    await requireBusinessAdmin(businessId);
-    const service = createServiceClient();
+    const caller = await requireBusinessAdmin(businessId);
+    const target = await getMemberInBusiness(businessId, memberId);
 
+    if (target.role === "owner") {
+      if (caller.role !== "owner") {
+        return { ok: false, error: "Only an owner can remove an owner." };
+      }
+      if ((await countActiveOwners(businessId)) <= 1) {
+        return { ok: false, error: "A business needs at least one owner." };
+      }
+    }
+
+    const service = createServiceClient();
     const { error } = await service
       .from("business_members")
       .update({ status: "removed" })
@@ -204,6 +253,7 @@ export async function updateStaffAvailability(
     }
 
     const parsed = availabilitySchema.parse(data);
+    if (!isOwn) await getMemberInBusiness(businessId, parsed.memberId);
     const service = createServiceClient();
 
     for (const entry of parsed.schedule) {
@@ -241,7 +291,19 @@ export async function updateStaffSpecialties(
 ): Promise<{ ok: boolean; error?: string }> {
   try {
     await requireBusinessAdmin(businessId);
+    await getMemberInBusiness(businessId, memberId);
     const service = createServiceClient();
+
+    if (serviceIds.length > 0) {
+      const { data: owned } = await service
+        .from("business_services")
+        .select("id")
+        .eq("business_id", businessId)
+        .in("id", serviceIds);
+      if ((owned ?? []).length !== new Set(serviceIds).size) {
+        return { ok: false, error: "Some services don't belong to this business." };
+      }
+    }
 
     // Delete existing
     await service
@@ -274,6 +336,7 @@ export async function updateStaffSpecialties(
  */
 export async function fixStaffProfiles(businessId: string): Promise<{ ok: boolean; error?: string }> {
   try {
+    await requireBusinessAdmin(businessId);
     const service = createServiceClient();
 
     // Find all business_members without a profiles row

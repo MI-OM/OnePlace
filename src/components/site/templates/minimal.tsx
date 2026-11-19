@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { TemplateProps } from "./types";
 
 const DAY_NAMES = [
@@ -302,7 +303,7 @@ export default function MinimalTemplate({
 
       {/* Footer */}
       <footer className="border-t border-neutral-100 py-8 text-center text-xs text-neutral-400">
-        {b.name} &middot; <a href="/" className="underline underline-offset-2 text-primary hover:text-primary/90">Powered by OnePlace</a>
+        {b.name} &middot; <Link href="/" className="underline underline-offset-2 text-primary hover:text-primary/90">Powered by OnePlace</Link>
       </footer>
     </div>
   );

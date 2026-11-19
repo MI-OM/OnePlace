@@ -8,6 +8,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { getKnowledgeItems } from "@/lib/business/knowledge-actions";
 import { KnowledgeManager } from "@/components/business/knowledge-manager";
 import { Button } from "@/components/ui/button";
+import { requireDashboardAccess, BUSINESS_ADMIN_ROLES } from "@/lib/dashboard-access";
 
 export const metadata: Metadata = { title: "Knowledge Base" };
 
@@ -20,6 +21,7 @@ export default async function KnowledgePage({
   if (!user) notFound();
 
   const { businessId } = await params;
+  await requireDashboardAccess(businessId, BUSINESS_ADMIN_ROLES);
   const service = createServiceClient();
 
   const { data: business } = await service

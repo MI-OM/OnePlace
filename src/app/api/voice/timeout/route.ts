@@ -1,29 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { timeoutVoiceCall } from "@/lib/voice";
+import { readSessionId, voiceErrorResponse } from "@/lib/voice-route";
 
 /**
  * POST /api/voice/timeout
- * Client reports that the 60-second wait has expired.
+ * The customer's client reports that the 60-second wait has expired.
  */
 export async function POST(request: NextRequest) {
-  let body: { sessionId?: string; conversationId?: string };
-  try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid request." }, { status: 400 });
+  const sessionId = await readSessionId(request);
+  if (!sessionId) {
+    return NextResponse.json({ error: "sessionId is required." }, { status: 400 });
   }
-
-  if (!body.sessionId || !body.conversationId) {
-    return NextResponse.json(
-      { error: "sessionId and conversationId are required." },
-      { status: 400 },
-    );
-  }
-
   try {
-    await timeoutVoiceCall(body.sessionId, body.conversationId);
+    await timeoutVoiceCall(sessionId);
     return NextResponse.json({ ok: true });
   } catch (e) {
-    return NextResponse.json({ error: String(e) }, { status: 400 });
+    return voiceErrorResponse(e, "timeout");
   }
 }

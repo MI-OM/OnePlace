@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { TemplateProps } from "./types";
 
 const DayNames = [
@@ -506,13 +507,13 @@ export default function ClassicTemplate({
           </p>
           <p className="mt-2 text-xs text-gray-400">
             Powered by{" "}
-            <a
+            <Link
               href="/"
               className={`font-medium ${primary}`}
               style={{ color: primary }}
             >
               OnePlace
-            </a>
+            </Link>
           </p>
         </div>
       </footer>

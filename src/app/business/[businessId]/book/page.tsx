@@ -5,6 +5,7 @@ import { ArrowLeft } from "lucide-react";
 
 import { createServiceClient } from "@/lib/supabase/service";
 import { BookingForm } from "@/components/business/booking-form";
+import { isStripeConfigured, onlinePaymentFor } from "@/lib/payments/stripe";
 import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = { title: "Book Appointment" };
@@ -19,7 +20,7 @@ export default async function BookPage({
 
   const { data: business } = await service
     .from("businesses")
-    .select("id, name, address_line_1, city, province")
+    .select("id, name, address_line_1, city, province, stripe_account_id, stripe_charges_enabled")
     .eq("id", businessId)
     .eq("verification_status", "verified")
     .maybeSingle();
@@ -28,7 +29,7 @@ export default async function BookPage({
 
   const { data: services } = await service
     .from("business_services")
-    .select("id, name, description, duration_minutes, price, price_type")
+    .select("id, name, description, duration_minutes, price, price_type, currency, payment_mode, deposit_amount")
     .eq("business_id", businessId)
     .eq("booking_required", true)
     .eq("is_active", true)
@@ -36,12 +37,15 @@ export default async function BookPage({
 
   const { data: allServices } = await service
     .from("business_services")
-    .select("id, name, description, duration_minutes, price, price_type, booking_required")
+    .select("id, name, description, duration_minutes, price, price_type, currency, payment_mode, deposit_amount, booking_required")
     .eq("business_id", businessId)
     .eq("is_active", true)
     .order("name");
 
   const bookingServices = services?.length ? services : allServices ?? [];
+  const takesPayments = Boolean(
+    isStripeConfigured() && business.stripe_account_id && business.stripe_charges_enabled,
+  );
 
   return (
     <main className="mx-auto min-h-screen max-w-lg px-4 py-10">
@@ -64,6 +68,12 @@ export default async function BookPage({
           durationMinutes: s.duration_minutes ?? 30,
           price: s.price,
           priceType: s.price_type,
+          onlinePayment: (() => {
+            const online = takesPayments ? onlinePaymentFor(s) : null;
+            return online
+              ? { ...online, currency: (s.currency ?? "CAD").trim().toUpperCase() }
+              : null;
+          })(),
         }))}
       />
     </main>

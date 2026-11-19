@@ -9,6 +9,7 @@ import { getBusinessBookings } from "@/lib/business/booking-actions";
 import { BookingsManager } from "@/components/business/bookings-manager";
 import { BusinessExportBar } from "@/components/business/business-export-bar";
 import { Button } from "@/components/ui/button";
+import { requireDashboardAccess } from "@/lib/dashboard-access";
 
 export const metadata: Metadata = { title: "Bookings" };
 
@@ -23,6 +24,7 @@ export default async function BookingsPage({
   if (!user) notFound();
 
   const { businessId } = await params;
+  await requireDashboardAccess(businessId);
   const { date } = await searchParams;
   const service = createServiceClient();
 

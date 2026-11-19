@@ -4,7 +4,7 @@
 
 DO $$
 DECLARE
-  member user_id;
+  member record;
 BEGIN
   FOR member IN SELECT user_id FROM public.business_members WHERE status = 'active' LOOP
     PERFORM * FROM public.profiles WHERE id = member.user_id;

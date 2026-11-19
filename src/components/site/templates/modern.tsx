@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { TemplateProps } from "./types";
 
 const DayNames = [
@@ -512,12 +513,12 @@ export default function ModernTemplate({
       <footer className="border-t border-slate-200 bg-white">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-8 py-8 text-sm text-slate-400 md:flex-row md:px-16">
           <span className="font-medium text-slate-600">{b.name}</span>
-          <a
+          <Link
             href="/"
             className="underline underline-offset-2 text-primary hover:text-primary/90"
           >
             Powered by OnePlace
-          </a>
+          </Link>
         </div>
       </footer>
     </div>

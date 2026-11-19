@@ -1,7 +1,9 @@
 "use server";
 
 import { createServiceClient } from "@/lib/supabase/service";
+import { one } from "@/lib/utils";
 import { isMemberOf } from "@/lib/chat/staff";
+import { requireBusinessRole } from "@/lib/authz";
 
 export type ServiceRequestItem = {
   id: string;
@@ -21,6 +23,7 @@ export type ServiceRequestItem = {
 export async function getBusinessRequests(
   businessId: string,
 ): Promise<ServiceRequestItem[]> {
+  await requireBusinessRole(businessId);
   const service = createServiceClient();
 
   const { data } = await service
@@ -34,7 +37,7 @@ export async function getBusinessRequests(
     .eq("business_id", businessId)
     .order("created_at", { ascending: false });
 
-  return (data ?? []).map((row: any) => {
+  return (data ?? []).map((row) => {
     const customer = Array.isArray(row.customer) ? row.customer[0] : row.customer;
     const name = customer?.display_name
       || [customer?.first_name, customer?.last_name].filter(Boolean).join(" ")
@@ -46,7 +49,7 @@ export async function getBusinessRequests(
       customerEmail: null,
       customerPhone: null,
       requestType: row.request_type,
-      serviceName: row.business_service?.name ?? null,
+      serviceName: one(row.business_service)?.name ?? null,
       status: row.status,
       notes: row.notes,
       requestedDate: row.requested_date,
