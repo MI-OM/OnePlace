@@ -16,6 +16,7 @@ import {
   type BookingPaymentRow,
 } from "@/lib/payments/core";
 import { createServiceClient } from "@/lib/supabase/service";
+import { one } from "@/lib/utils";
 import { DAY_LABELS, formatTime } from "@/lib/format";
 
 type ProfileName = {
@@ -503,16 +504,16 @@ export async function getBusinessBookings(
 
   const { data } = await query;
 
-  return (data ?? []).map((row: any) => ({
+  return (data ?? []).map((row) => ({
     id: row.id,
     customer_id: row.customer_id,
     customer_name: row.customer_name,
     customer_email: row.customer_email,
     customer_phone: row.customer_phone,
     service_id: row.service_id,
-    service_name: row.business_services?.name ?? null,
+    service_name: one(row.business_services)?.name ?? null,
     staff_member_id: row.staff_member_id,
-    staff_name: profileName(row.staff?.user) ?? null,
+    staff_name: profileName(one(row.staff)?.user) ?? null,
     booking_date: row.booking_date,
     start_time: row.start_time,
     end_time: row.end_time,

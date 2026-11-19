@@ -59,7 +59,10 @@ const inviteSchema = z.object({
 });
 
 // Check if a profiles row exists for a user ID
-async function ensureProfilesRow(userId: string, supabase: any) {
+async function ensureProfilesRow(
+  userId: string,
+  supabase: ReturnType<typeof createServiceClient> | Awaited<ReturnType<typeof createClient>>,
+) {
   const { data: profile } = await supabase
     .from("profiles")
     .select("id")

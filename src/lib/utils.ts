@@ -19,3 +19,21 @@ export function safeRedirectPath(path: string | null | undefined, fallback = "/"
   }
   return path;
 }
+
+/**
+ * Supabase embeds a many-to-one relation as an object at runtime, but
+ * without generated DB types it is typed as an array. Accept either.
+ */
+export function one<T>(value: T | T[] | null | undefined): T | undefined {
+  if (Array.isArray(value)) return value[0];
+  return value ?? undefined;
+}
+
+/** Display name from a profiles row (there is no full_name column). */
+export function personName(
+  p: { display_name?: string | null; first_name?: string | null; last_name?: string | null } | undefined,
+  fallback: string,
+): string {
+  if (!p) return fallback;
+  return p.display_name || [p.first_name, p.last_name].filter(Boolean).join(" ") || fallback;
+}

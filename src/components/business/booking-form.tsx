@@ -62,20 +62,32 @@ export function BookingForm({ businessId, services }: Props) {
   // Fetch available slots when date and service are selected
   useEffect(() => {
     if (!selectedService || !selectedDate) return;
-    setSlotsLoading(true);
-    setSlotsError(null);
-    setSelectedSlot(null);
+    let stale = false;
 
     getAvailableSlots(businessId, selectedService, selectedDate)
       .then((result) => {
+        if (stale) return;
         setSlots(result.slots);
         if (result.error) setSlotsError(result.error);
       })
       .catch(() => {
-        setSlotsError("Failed to load available times.");
+        if (!stale) setSlotsError("Failed to load available times.");
       })
-      .finally(() => setSlotsLoading(false));
+      .finally(() => {
+        if (!stale) setSlotsLoading(false);
+      });
+    return () => {
+      stale = true;
+    };
   }, [selectedService, selectedDate, businessId]);
+
+  /** Clears slot state when the service or date changes (before refetch). */
+  const resetSlots = (willFetch: boolean) => {
+    setSlots([]);
+    setSelectedSlot(null);
+    setSlotsError(null);
+    setSlotsLoading(willFetch);
+  };
 
   const handleSubmit = () => {
     if (!selectedService || !selectedDate || !selectedSlot) return;
@@ -163,6 +175,7 @@ export function BookingForm({ businessId, services }: Props) {
               key={s.id}
               onClick={() => {
                 setSelectedService(s.id);
+                resetSlots(Boolean(selectedDate));
                 setStep("date");
               }}
               className={`w-full rounded-xl border border-border p-4 text-left transition-colors hover:bg-muted/50 ${selectedService === s.id ? "bg-muted" : ""}`}
@@ -251,6 +264,7 @@ export function BookingForm({ businessId, services }: Props) {
                   disabled={d.disabled}
                   onClick={() => {
                     setSelectedDate(d.date);
+                    resetSlots(Boolean(selectedService));
                     setStep("time");
                   }}
                   className={`rounded-lg py-2 text-sm transition-colors ${

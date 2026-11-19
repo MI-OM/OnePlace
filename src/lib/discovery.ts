@@ -559,7 +559,7 @@ export async function enrichWithDistance(
     .in("id", ids);
 
   const coordsMap = new Map(
-    (data ?? []).map((row: any) => [row.id, { lat: row.latitude, lng: row.longitude }]),
+    (data ?? []).map((row) => [row.id, { lat: row.latitude, lng: row.longitude }]),
   );
 
   const enriched = results.map((r) => {

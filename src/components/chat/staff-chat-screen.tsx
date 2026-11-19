@@ -103,9 +103,12 @@ export function StaffChatScreen({
   }, [conversationId]);
 
   useEffect(() => {
-    checkPendingCalls();
+    const first = setTimeout(checkPendingCalls, 0);
     const interval = setInterval(checkPendingCalls, 5000);
-    return () => clearInterval(interval);
+    return () => {
+      clearTimeout(first);
+      clearInterval(interval);
+    };
   }, [checkPendingCalls]);
 
   // Notification beep — plays a quick 800Hz tone when a new message arrives

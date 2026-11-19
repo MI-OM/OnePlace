@@ -1,6 +1,7 @@
 "use server";
 
 import { createServiceClient } from "@/lib/supabase/service";
+import { one, personName } from "@/lib/utils";
 import { toCSV } from "@/lib/csv";
 import { requirePlatformAdmin } from "@/lib/authz";
 
@@ -32,7 +33,7 @@ export async function getAdminBusinessesData(): Promise<ReportData> {
     "Created",
   ];
 
-  const rows = (data ?? []).map((b: any) => [
+  const rows = (data ?? []).map((b) => [
     b.name,
     b.slug,
     b.status,
@@ -57,7 +58,7 @@ export async function getAdminUsersData(): Promise<ReportData> {
 
   const headers = ["Name", "Phone", "Status", "Joined"];
 
-  const rows = (data ?? []).map((u: any) => [
+  const rows = (data ?? []).map((u) => [
     u.display_name ??
       [u.first_name, u.last_name].filter(Boolean).join(" ") ??
       "—",
@@ -91,15 +92,12 @@ export async function getAdminReviewsData(): Promise<ReportData> {
     "Body",
   ];
 
-  const rows = (data ?? []).map((r: any) => [
+  const rows = (data ?? []).map((r) => [
     new Date(r.created_at).toLocaleDateString(),
     r.rating,
     r.status,
-    r.business?.name ?? "",
-    r.reviewer
-      ? r.reviewer.display_name ??
-        [r.reviewer.first_name, r.reviewer.last_name].filter(Boolean).join(" ")
-      : "Anonymous",
+    one(r.business)?.name ?? "",
+    personName(one(r.reviewer), "Anonymous"),
     r.title ?? "",
     r.body ?? "",
   ]);
@@ -147,7 +145,7 @@ export async function getAdminAuditData(
     "New Values",
   ];
 
-  const rows = (data ?? []).map((log: any) => [
+  const rows = (data ?? []).map((log) => [
     new Date(log.created_at).toLocaleString(),
     log.action,
     log.entity_type ?? "",

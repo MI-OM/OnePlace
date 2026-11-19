@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Search } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 
@@ -32,6 +33,7 @@ export function SearchBox({
   autoFocus?: boolean;
   size?: "default" | "large";
 }) {
+  const router = useRouter();
   const [query, setQuery] = useState(defaultValue ?? "");
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [open, setOpen] = useState(false);
@@ -91,9 +93,9 @@ export function SearchBox({
       e.preventDefault();
       const s = suggestions[activeIndex];
       if (s.kind === "category" && s.slug) {
-        window.location.href = `/categories/${s.slug}`;
+        router.push(`/categories/${s.slug}`);
       } else if (s.slug) {
-        window.location.href = `/businesses/${s.slug}`;
+        router.push(`/businesses/${s.slug}`);
       }
       setOpen(false);
     }
@@ -101,9 +103,9 @@ export function SearchBox({
 
   function selectSuggestion(s: Suggestion) {
     if (s.kind === "category" && s.slug) {
-      window.location.href = `/categories/${s.slug}`;
+      router.push(`/categories/${s.slug}`);
     } else if (s.slug) {
-      window.location.href = `/businesses/${s.slug}`;
+      router.push(`/businesses/${s.slug}`);
     }
     setOpen(false);
   }

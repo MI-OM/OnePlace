@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { toast } from "sonner";
 import { Volume2, VolumeX } from "lucide-react";
 import {
@@ -15,14 +15,12 @@ import {
 import type { SoundPrefs } from "@/lib/sounds";
 import { Button } from "@/components/ui/button";
 
+const noopSubscribe = () => () => {};
+
 export function SoundSettings() {
   const [prefs, setPrefs] = useState<SoundPrefs>(getSoundPrefs);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setPrefs(getSoundPrefs());
-    setMounted(true);
-  }, []);
+  // false on the server and during hydration, true on the client after.
+  const mounted = useSyncExternalStore(noopSubscribe, () => true, () => false);
 
   const update = (key: keyof SoundPrefs, value: boolean) => {
     const next = { ...prefs, [key]: value };

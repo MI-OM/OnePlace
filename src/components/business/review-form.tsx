@@ -16,6 +16,14 @@ type Props = {
 };
 
 export function ReviewForm({ businessId, hasReviewed, onSubmitted }: Props) {
+  // Hooks must run on every render, before any early return.
+  const [rating, setRating] = useState(0);
+  const [hoveredRating, setHoveredRating] = useState(0);
+  const [title, setTitle] = useState("");
+  const [body, setBody] = useState("");
+  const [pending, startTransition] = useTransition();
+  const [submitted, setSubmitted] = useState(false);
+
   if (hasReviewed) {
     return (
       <div className="rounded-xl border border-border bg-card p-4 text-center">
@@ -23,12 +31,6 @@ export function ReviewForm({ businessId, hasReviewed, onSubmitted }: Props) {
       </div>
     );
   }
-  const [rating, setRating] = useState(0);
-  const [hoveredRating, setHoveredRating] = useState(0);
-  const [title, setTitle] = useState("");
-  const [body, setBody] = useState("");
-  const [pending, startTransition] = useTransition();
-  const [submitted, setSubmitted] = useState(false);
 
   const handleSubmit = () => {
     if (rating === 0) {
